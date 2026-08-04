@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Nexus Financial DBMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ffb4ab",
+                    "on-surface-variant": "#b9caca",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-tertiary-fixed": "#221b00",
+                    "surface-dim": "#0b1326",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-background": "#dae2fd",
+                    "outline-variant": "#3a494a",
+                    "on-primary-fixed": "#002021",
+                    "primary-container": "#00f5ff",
+                    "inverse-surface": "#dae2fd",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-highest": "#2d3449",
+                    "background": "#0b1326",
+                    "tertiary-container": "#ffdb3f",
+                    "inverse-primary": "#00696e",
+                    "secondary-container": "#00a572",
+                    "primary-fixed": "#63f7ff",
+                    "surface-tint": "#00dce5",
+                    "on-tertiary-fixed-variant": "#544600",
+                    "surface-container": "#171f33",
+                    "secondary-fixed": "#6ffbbe",
+                    "tertiary": "#fff9f0",
+                    "surface-variant": "#2d3449",
+                    "on-tertiary": "#3a3000",
+                    "on-tertiary-container": "#736000",
+                    "surface-bright": "#31394d",
+                    "secondary": "#4edea3",
+                    "on-primary": "#003739",
+                    "surface-container-low": "#131b2e",
+                    "inverse-on-surface": "#283044",
+                    "on-primary-container": "#006c71",
+                    "on-secondary-fixed": "#002113",
+                    "surface": "#0b1326",
+                    "on-primary-fixed-variant": "#004f53",
+                    "on-secondary-container": "#00311f",
+                    "primary": "#e9feff",
+                    "tertiary-fixed": "#ffe16c",
+                    "outline": "#849495",
+                    "on-error": "#690005",
+                    "surface-container-lowest": "#060e20",
+                    "surface-container-high": "#222a3d",
+                    "on-surface": "#dae2fd",
+                    "primary-fixed-dim": "#00dce5",
+                    "tertiary-fixed-dim": "#e7c427",
+                    "on-secondary": "#003824"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "container-max": "1440px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "mono-data": ["monospace"],
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                    "mono-data": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .input-glow:focus {
+            border-color: #00f5ff;
+            box-shadow: inset 0 0 8px rgba(0, 245, 255, 0.15);
+            outline: none;
+        }
+
+        .btn-primary-glow {
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 245, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .role-chip {
+            transition: all 0.2s ease;
+        }
+
+        .role-chip.active {
+            background-color: #00a572;
+            color: #002113;
+        }
+
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative px-margin-mobile md:px-0">
+<!-- Abstract Deep Slate Geometric Background -->
+<div class="bg-pattern" data-alt="A sophisticated abstract background for a high-end financial application. The scene features deep slate and charcoal geometric shards and crystalline structures floating in a dark, atmospheric void. Subtle streaks of electric cyan light catch the edges of the sharp polygons, creating a sense of technological depth and precision. The lighting is low-key with high-contrast accents, emphasizing a premium corporate dark mode aesthetic. Minimalist and professional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARpHWgyEk-kJGOeEH3rU2zzeYYxTa-P19RE0WUyXDKpr1A0KGptv34F1i2BbI5_z6NQPycfzBH4xYhzpM3mdphCZdXGnQ_J1NGF0HjvMPMlfu0Mt-5emg4y2cXqyuh4AmNqE1G-GK2bt5yeKNR-eMqaiqOcecVCAjGVOtajOP0FGwyIMIK9hUHZ3_Z24D0MkfLxJgI7vHfxs43NSpT3JPL1by8DsdhFnu4Q5l90EVZcHKVfzAP2bnr')"></div>
+<!-- Background Atmospheric Glows -->
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-[120px] pointer-events-none"></div>
+<main class="w-full max-w-md z-10">
+<!-- Brand Header -->
+<div class="text-center mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">
+                Nexus Financial <span class="text-secondary font-light">DBMS</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Secure System Access</p>
+</div>
+<!-- Login Card -->
+<div class="glass-card rounded-xl p-8 md:p-10">
+<form class="space-y-6" id="loginForm">
+<div>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-4 uppercase">Select Access Role</h2>
+<div class="grid grid-cols-2 gap-3" id="roleSelection">
+<button class="role-chip active flex items-center justify-center gap-2 border border-outline-variant rounded-lg py-3 px-4 font-label-caps text-label-caps hover:bg-surface-variant transition-colors" onclick="selectRole(this)" type="button">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                            Administrator
+                        </button>
+<button class="role-chip flex items-center justify-center gap-2 border border-outline-variant rounded-lg py-3 px-4 font-label-caps text-label-caps hover:bg-surface-variant transition-colors" onclick="selectRole(this)" type="button">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+                            Branch Manager
+                        </button>
+<button class="role-chip flex items-center justify-center gap-2 border border-outline-variant rounded-lg py-3 px-4 font-label-caps text-label-caps hover:bg-surface-variant transition-colors" onclick="selectRole(this)" type="button">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+                            Employee
+                        </button>
+<button class="role-chip flex items-center justify-center gap-2 border border-outline-variant rounded-lg py-3 px-4 font-label-caps text-label-caps hover:bg-surface-variant transition-colors" onclick="selectRole(this)" type="button">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                            Customer
+                        </button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="relative">
+<label class="sr-only" for="username">Username</label>
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">alternate_email</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 pl-12 pr-4 text-on-surface font-body-lg text-body-lg placeholder:text-on-surface-variant/50 input-glow transition-all" id="username" name="username" placeholder="Username" type="text"/>
+</div>
+<div class="relative">
+<label class="sr-only" for="password">Password</label>
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 pl-12 pr-12 text-on-surface font-body-lg text-body-lg placeholder:text-on-surface-variant/50 input-glow transition-all" id="password" name="password" placeholder="Password" type="password"/>
+<button class="absolute inset-y-0 right-4 flex items-center text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant bg-surface-container-lowest text-secondary-container focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember device</span>
+</label>
+<a class="font-body-sm text-body-sm text-secondary hover:underline" href="#">Forgot credentials?</a>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-lg btn-primary-glow flex items-center justify-center gap-2 active:scale-[0.98] transition-transform" type="submit">
+<span class="material-symbols-outlined">verified_user</span>
+                    Secure Login
+                </button>
+</form>
+<!-- Footer Links -->
+<div class="mt-8 pt-6 border-t border-outline-variant flex justify-center gap-6">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">shield</span> Security Policy
+                </a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">headset_mic</span> Support
+                </a>
+</div>
+</div>
+<p class="mt-8 text-center font-body-sm text-body-sm text-on-surface-variant/60">
+            © 2024 Nexus Financial Systems. All rights reserved. <br/>
+            Authorized access only. System activity is monitored.
+        </p>
+</main>
+<script>
+        function selectRole(element) {
+            // Remove active classes from all chips
+            const chips = document.querySelectorAll('.role-chip');
+            chips.forEach(chip => {
+                chip.classList.remove('active', 'bg-secondary-container', 'text-on-secondary-container');
+                chip.classList.add('bg-transparent', 'text-on-surface-variant');
+            });
+
+            // Add active classes to selected
+            element.classList.add('active');
+            element.classList.remove('bg-transparent', 'text-on-surface-variant');
+        }
+
+        // Simple micro-interaction for login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Authenticating...';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Access Granted';
+                btn.classList.replace('bg-primary-container', 'bg-secondary-container');
+                btn.classList.replace('text-on-primary-container', 'text-on-secondary-container');
+                
+                setTimeout(() => {
+                    alert('Login successful! Redirecting to dashboard...');
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    btn.classList.replace('bg-secondary-container', 'bg-primary-container');
+                    btn.classList.replace('text-on-secondary-container', 'text-on-primary-container');
+                }, 1000);
+            }, 2000);
+        });
+
+        // Toggle Password Visibility
+        const togglePass = document.querySelector('button .material-symbols-outlined[content="visibility"]');
+        if (togglePass) {
+            togglePass.parentElement.addEventListener('click', function() {
+                const input = document.getElementById('password');
+                const icon = this.querySelector('.material-symbols-outlined');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = 'visibility_off';
+                } else {
+                    input.type = 'password';
+                    icon.textContent = 'visibility';
+                }
+            });
+        }
+    </script>
+</body></html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Financial | Loan Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1326;
+            color: #dae2fd;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .loan-card-glow:hover {
+            box-shadow: 0 0 15px rgba(78, 222, 163, 0.1);
+            border-color: #4edea3;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #171f33;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3a494a;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#171f33",
+                    "secondary-container": "#00a572",
+                    "on-error": "#690005",
+                    "inverse-primary": "#00696e",
+                    "surface-container-lowest": "#060e20",
+                    "on-background": "#dae2fd",
+                    "outline": "#849495",
+                    "surface": "#0b1326",
+                    "on-surface": "#dae2fd",
+                    "surface-container-high": "#222a3d",
+                    "tertiary-container": "#ffdb3f",
+                    "surface-dim": "#0b1326",
+                    "secondary-fixed": "#6ffbbe",
+                    "surface-container-highest": "#2d3449",
+                    "error-container": "#93000a",
+                    "tertiary": "#fff9f0",
+                    "error": "#ffb4ab",
+                    "on-primary": "#003739",
+                    "background": "#0b1326",
+                    "primary-fixed-dim": "#00dce5",
+                    "on-surface-variant": "#b9caca",
+                    "outline-variant": "#3a494a",
+                    "primary-fixed": "#63f7ff",
+                    "primary": "#e9feff",
+                    "surface-tint": "#00dce5",
+                    "secondary": "#4edea3",
+                    "surface-container-low": "#131b2e",
+                    "surface-bright": "#31394d",
+                    "primary-container": "#00f5ff",
+                    "surface-variant": "#2d3449",
+                    "on-secondary-container": "#00311f",
+                    "inverse-on-surface": "#283044",
+                    "on-primary-container": "#006c71",
+                    "inverse-surface": "#dae2fd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "mono-data": ["monospace"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-data": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col p-4 z-[60]">
+<div class="mb-8 px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Nexus Financial</h1>
+<p class="text-on-surface-variant text-body-sm">FinTech DBMS</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm">Dashboard</span>
+</a>
+<!-- Customers (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm">Customers</span>
+</a>
+<!-- Branches (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-body-sm">Branches</span>
+</a>
+<!-- Employees (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-body-sm">Employees</span>
+</a>
+<!-- Accounts (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-body-sm">Accounts</span>
+</a>
+<!-- Transactions (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-body-sm">Transactions</span>
+</a>
+<!-- Loans (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-body-sm">Loans</span>
+</a>
+<!-- Cards (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-body-sm">Cards</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs">JD</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-on-surface font-semibold text-xs truncate">John Doe</p>
+<p class="text-on-surface-variant text-[10px] truncate">Admin Access</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">logout</span>
+</button>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-8 w-[calc(100%-16rem)] ml-64 z-50">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 text-body-sm focus:outline-none focus:border-primary-fixed-dim transition-all" placeholder="Search loan IDs, borrowers, or branches..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 border-r border-outline-variant pr-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-body-sm font-medium text-on-surface">Nexus Main Branch</span>
+<div class="w-8 h-8 rounded-lg overflow-hidden border border-outline-variant bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a sleek, high-tech obsidian corporate logo with cyan backlighting, set against a dark brushed metal background, reflecting a professional and advanced financial institution's identity in a premium dark mode style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFbFiqpNuoe4hbgMxio3PAef6OW6ItATbngvnd-PXRDWxMn29nIgzBrboUxy6IoO0mZgTYjWO8vswd-cY236yHGClm4SGvnzY3AiLzAasFHV5xDf751sgMNgAvq23R0aTyPtu5ww_V0ZhkW6ujev_hGjX8IFBhuslqqlk7yslgauZe30iWPuB9Qf8KdBg7pyIJMpRufmW9r0xN0UHOqaQ8rOVCyGcCHz_hLvs5pbBv77Uuk48I3XVp"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-16 h-screen overflow-y-auto custom-scrollbar bg-surface text-on-surface">
+<div class="p-8 max-w-[1600px] mx-auto space-y-8">
+<!-- Header & Primary Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Loan Management</h2>
+<p class="text-on-surface-variant text-body-lg">Monitor portfolio performance and manage credit operations.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-primary text-primary font-semibold hover:bg-primary/5 active:scale-95 transition-all">
+<span class="material-symbols-outlined">verified_user</span>
+<span>Credit Check</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary-fixed-dim text-on-primary font-bold shadow-[0_0_15px_rgba(0,220,229,0.2)] hover:shadow-[0_0_20px_rgba(0,220,229,0.4)] active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+<span>New Application</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Statistics - Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Stat Card 1 -->
+<div class="col-span-1 md:col-span-2 bg-surface-container-low border border-outline-variant p-6 rounded-xl flex flex-col justify-between relative overflow-hidden group">
+
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-4">
+<span class="text-label-caps text-primary">TOTAL DISBURSED</span>
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex items-baseline gap-3">
+<span class="text-4xl font-bold font-mono-data">$42,850,000.00</span>
+<span class="text-secondary text-xs flex items-center font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span> 12.5%
+                            </span>
+</div>
+<p class="text-on-surface-variant text-xs mt-2">Fiscal Year 2024 Cumulative Portfolio</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface-container-low border border-outline-variant p-6 rounded-xl loan-card-glow transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="text-label-caps text-secondary">ACTIVE LOANS</span>
+<div class="p-2 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary">sync_alt</span>
+</div>
+</div>
+<div class="text-3xl font-bold font-mono-data">1,248</div>
+<div class="mt-4 h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+<p class="text-on-surface-variant text-xs mt-2">75% of total capacity utilized</p>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface-container-low border border-outline-variant p-6 rounded-xl loan-card-glow transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="text-label-caps text-tertiary-container">PENDING APPLICATIONS</span>
+<div class="p-2 bg-tertiary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-tertiary-container">pending_actions</span>
+</div>
+</div>
+<div class="text-3xl font-bold font-mono-data">84</div>
+<div class="mt-4 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="text-xs text-on-surface-variant">12 require urgent review</span>
+</div>
+</div>
+</div>
+<!-- Loan Portfolio Table Section -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container/30">
+<h3 class="font-headline-md text-headline-md">Active Portfolios</h3>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest/50">
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">LOAN ID</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">BORROWER</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">AMOUNT</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">INTEREST</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">DURATION</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">STATUS</th>
+<th class="px-6 py-4 text-label-caps text-on-surface-variant">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Table Row 1 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-4 font-mono-data text-primary">#LN-88210</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<div class="text-body-sm font-semibold">Alex Vanguard</div>
+<div class="text-[10px] text-on-surface-variant">Commercial Credit</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono-data">$250,000.00</td>
+<td class="px-6 py-4 font-mono-data">4.2%</td>
+<td class="px-6 py-4 text-body-sm">24 Months</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-secondary/15 text-secondary border border-secondary/20">APPROVED</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-4 font-mono-data text-primary">#LN-88211</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<div class="text-body-sm font-semibold">Sarah Sterling</div>
+<div class="text-[10px] text-on-surface-variant">Mortgage</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono-data">$1,120,000.00</td>
+<td class="px-6 py-4 font-mono-data">3.8%</td>
+<td class="px-6 py-4 text-body-sm">360 Months</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-tertiary-container/15 text-tertiary-container border border-tertiary-container/20">PENDING</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-4 font-mono-data text-primary">#LN-88212</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<div class="text-body-sm font-semibold">Michael Thorne</div>
+<div class="text-[10px] text-on-surface-variant">Personal Loan</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono-data">$45,000.00</td>
+<td class="px-6 py-4 font-mono-data">6.5%</td>
+<td class="px-6 py-4 text-body-sm">60 Months</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-secondary/15 text-secondary border border-secondary/20">APPROVED</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 4 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-4 font-mono-data text-primary">#LN-88213</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<div class="text-body-sm font-semibold">Emma Sterling</div>
+<div class="text-[10px] text-on-surface-variant">Business Expansion</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono-data">$500,000.00</td>
+<td class="px-6 py-4 font-mono-data">5.1%</td>
+<td class="px-6 py-4 text-body-sm">48 Months</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-error-container/20 text-error border border-error-container/30">REJECTED</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 5 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-4 font-mono-data text-primary">#LN-88214</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<div class="text-body-sm font-semibold">David Orion</div>
+<div class="text-[10px] text-on-surface-variant">SME Loan</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono-data">$85,000.00</td>
+<td class="px-6 py-4 font-mono-data">4.9%</td>
+<td class="px-6 py-4 text-body-sm">36 Months</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-secondary/15 text-secondary border border-secondary/20">APPROVED</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container border-t border-outline-variant flex items-center justify-between">
+<p class="text-xs text-on-surface-variant">Showing 5 of 1,248 active loans</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 text-xs border border-outline-variant rounded hover:bg-surface-container-high disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 text-xs bg-primary-container text-on-primary-container rounded">1</button>
+<button class="px-3 py-1 text-xs border border-outline-variant rounded hover:bg-surface-container-high">2</button>
+<button class="px-3 py-1 text-xs border border-outline-variant rounded hover:bg-surface-container-high">3</button>
+<button class="px-3 py-1 text-xs border border-outline-variant rounded hover:bg-surface-container-high">Next</button>
+</div>
+</div>
+</div>
+<!-- Performance Insights & Risks -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Risk Analysis -->
+<div class="lg:col-span-2 bg-surface-container-low border border-outline-variant p-6 rounded-xl">
+<div class="flex items-center justify-between mb-6">
+<h4 class="font-headline-md text-headline-md text-primary">Portfolio Health Index</h4>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-xs text-on-surface-variant">Low Risk (92%)</span>
+</div>
+</div>
+<div class="h-48 flex items-end gap-2 px-2">
+<!-- Simple visual graph representation using div bars -->
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[40%]" title="Jan"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[55%]" title="Feb"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[45%]" title="Mar"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[70%]" title="Apr"></div>
+<div class="flex-1 bg-primary/20 rounded-t border-t-2 border-primary h-[85%]" title="May (Current)"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[65%]" title="Jun"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[50%]" title="Jul"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary/40 transition-all h-[60%]" title="Aug"></div>
+</div>
+<div class="flex justify-between mt-4 text-label-caps text-on-surface-variant text-[10px]">
+<span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span>
+</div>
+</div>
+<!-- Recent Credit Checks -->
+<div class="bg-surface-container-low border border-outline-variant p-6 rounded-xl">
+<h4 class="font-headline-md text-headline-md mb-4">Credit Checks</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/20">
+<div>
+<p class="text-body-sm font-semibold">Lunar Systems</p>
+<p class="text-[10px] text-on-surface-variant">Corp ID: #88229</p>
+</div>
+<div class="text-right">
+<span class="text-secondary font-mono-data font-bold">842</span>
+<p class="text-[10px] text-secondary">Excellent</p>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/20">
+<div>
+<p class="text-body-sm font-semibold">Robert Hains</p>
+<p class="text-[10px] text-on-surface-variant">Tax ID: #55120</p>
+</div>
+<div class="text-right">
+<span class="text-tertiary-container font-mono-data font-bold">620</span>
+<p class="text-[10px] text-tertiary-container">Average</p>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/20">
+<div>
+<p class="text-body-sm font-semibold">Astra Logistics</p>
+<p class="text-[10px] text-on-surface-variant">Corp ID: #99012</p>
+</div>
+<div class="text-right">
+<span class="text-secondary font-mono-data font-bold">790</span>
+<p class="text-[10px] text-secondary">High</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 text-xs font-bold text-primary hover:underline transition-all">View All Histories</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple logic for side nav interaction
+        document.querySelectorAll('aside nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if(!this.classList.contains('bg-secondary-container')) {
+                    // Prevent default for demo
+                    e.preventDefault();
+                    // Clear others
+                    document.querySelectorAll('aside nav a').forEach(l => {
+                        l.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                        l.classList.add('text-on-surface-variant');
+                        const icon = l.querySelector('.material-symbols-outlined');
+                        if(icon) icon.style.fontVariationSettings = "'FILL' 0";
+                    });
+                    // Set active
+                    this.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                    this.classList.remove('text-on-surface-variant');
+                    const icon = this.querySelector('.material-symbols-outlined');
+                    if(icon) icon.style.fontVariationSettings = "'FILL' 1";
+                }
+            });
+        });
+
+        // Hover effect for table rows
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateX(4px)';
+                row.style.transition = 'transform 0.2s ease-out';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateX(0)';
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Financial | Card Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .card-glow-primary:hover {
+            border-color: #00dce5;
+            box-shadow: 0 0 20px rgba(0, 220, 229, 0.1);
+        }
+        .neon-text-glow {
+            text-shadow: 0 0 8px rgba(0, 220, 229, 0.4);
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060e20;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a494a;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#171f33",
+                        "secondary-container": "#00a572",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "inverse-primary": "#00696e",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary-fixed": "#002113",
+                        "on-background": "#dae2fd",
+                        "on-primary-fixed": "#002021",
+                        "outline": "#849495",
+                        "surface": "#0b1326",
+                        "on-surface": "#dae2fd",
+                        "tertiary-fixed-dim": "#e7c427",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-container": "#ffdb3f",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "tertiary": "#fff9f0",
+                        "on-primary-fixed-variant": "#004f53",
+                        "error": "#ffb4ab",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3a3000",
+                        "on-secondary": "#003824",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#003739",
+                        "background": "#0b1326",
+                        "primary-fixed-dim": "#00dce5",
+                        "on-surface-variant": "#b9caca",
+                        "outline-variant": "#3a494a",
+                        "primary-fixed": "#63f7ff",
+                        "primary": "#e9feff",
+                        "surface-tint": "#00dce5",
+                        "on-tertiary-fixed": "#221b00",
+                        "secondary": "#4edea3",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed-variant": "#005236",
+                        "primary-container": "#00f5ff",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed": "#ffe16c",
+                        "on-tertiary-container": "#736000",
+                        "inverse-on-surface": "#283044",
+                        "on-primary-container": "#006c71",
+                        "inverse-surface": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "mono-data": ["monospace"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-data": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-body-lg text-body-lg">
+<!-- Side Navigation Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col p-4 z-[60]">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container font-bold">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Nexus Financial</h1>
+<p class="text-[10px] font-label-caps text-on-surface-variant uppercase tracking-widest">FinTech DBMS</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-sm text-body-sm">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-body-sm text-body-sm">Branches</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-body-sm text-body-sm">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-body-sm text-body-sm">Accounts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-body-sm text-body-sm">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Loans</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container flex items-center gap-3 px-3 py-2 rounded-lg active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-body-sm text-body-sm">Cards</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional female banking executive with short dark hair, wearing a sleek modern black blazer. The lighting is dramatic and moody, set against a dark architectural background with subtle cyan lighting accents. Professional high-end corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPpeb91DeyK361cWmKRKhFT5OZYSk0cKmWgzUoJO5R9RYumMHswJ5iIy9UcXbztlcp_9jBhDCn8pKsPThE9ab-ramsrOMO44Dh6GeTQso3bT4Au3UQrNFpFkkVCsSKzDlOtjiRPD3pM5r2es9ZVufep6kWNN4puQ4erOqzhirm9NEf3FONbXoRPcwOwZnlemU-laWo6Dn6KA94zKe-nYnlyd6ozrgH_kzt4W0dqkd1Xj_cgoP4nymM"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate text-on-surface">Alex Chen</p>
+<p class="text-xs text-on-surface-variant truncate">System Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-8 w-[calc(100%-16rem)] ml-64 z-50">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim outline-none transition-all" placeholder="Search cards, customers, or transactions..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6 ml-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-secondary-container rounded-full border border-surface"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-8 min-h-screen">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary neon-text-glow">Card Management</h2>
+<p class="text-on-surface-variant mt-1">Oversee global card issuance and security controls.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2.5 rounded-lg border border-outline-variant hover:border-primary transition-all flex items-center gap-2 text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-lg">download</span>
+                    Export Report
+                </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary-container text-on-primary-container hover:brightness-110 transition-all flex items-center gap-2 font-bold text-sm shadow-[0_0_15px_rgba(0,220,229,0.2)]">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">add</span>
+                    Issue New Card
+                </button>
+</div>
+</div>
+<!-- Featured / Active Cards Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+<!-- Summary Card 1 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">credit_card</span>
+</div>
+<span class="text-secondary font-mono-data text-mono-data">+12% vs last month</span>
+</div>
+<h3 class="text-on-surface-variant font-label-caps uppercase tracking-wider mb-1">Total Active Cards</h3>
+<p class="text-4xl font-headline-lg text-on-surface">12,482</p>
+</div>
+<!-- Summary Card 2 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-error/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">block</span>
+</div>
+<span class="text-error font-mono-data text-mono-data">-2% security alerts</span>
+</div>
+<h3 class="text-on-surface-variant font-label-caps uppercase tracking-wider mb-1">Blocked/Restricted</h3>
+<p class="text-4xl font-headline-lg text-on-surface">158</p>
+</div>
+<!-- Visual Asset Card -->
+<div class="relative overflow-hidden rounded-xl border border-outline-variant h-full min-h-[160px]">
+
+<div class="relative z-10 p-6 h-full flex flex-col justify-end bg-gradient-to-t from-surface to-transparent">
+<h4 class="font-headline-md text-headline-md text-primary-fixed">Security Monitor</h4>
+<p class="text-sm text-on-surface-variant">Real-time fraud detection active</p>
+</div>
+</div>
+</div>
+<!-- Cards List / Management Table -->
+<div class="glass-card rounded-xl border border-outline-variant overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-low/50">
+<h3 class="font-headline-md text-headline-md">Active Card Registry</h3>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-medium">Filter by:</span>
+<select class="bg-surface border-outline-variant rounded-lg text-xs py-1 px-3 text-on-surface outline-none focus:border-primary">
+<option>All Status</option>
+<option>Active</option>
+<option>Blocked</option>
+<option>Expired</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest/30">
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs">Cardholder</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs">Card Number</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs">Type</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs">Expiry</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs">Status</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant uppercase text-xs text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold">JD</div>
+<div>
+<p class="font-bold text-on-surface">Johnathan Doe</p>
+<p class="text-xs text-on-surface-variant">Personal Account</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-on-surface">**** **** **** 4291</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">credit_card</span>
+<span class="text-sm">Visa Infinite</span>
+</div>
+</td>
+<td class="px-6 py-5 font-mono-data text-sm">08/27</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-secondary/15 text-secondary border border-secondary/30">Active</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg transition-colors text-on-surface-variant" title="Block Card">
+<span class="material-symbols-outlined">block</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary text-xs font-bold">SM</div>
+<div>
+<p class="font-bold text-on-surface">Sarah Miller</p>
+<p class="text-xs text-on-surface-variant">Corporate Account</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-on-surface">**** **** **** 8802</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">payments</span>
+<span class="text-sm">Mastercard Gold</span>
+</div>
+</td>
+<td class="px-6 py-5 font-mono-data text-sm">11/25</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-error/15 text-error border border-error/30">Blocked</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-secondary/10 hover:text-secondary rounded-lg transition-colors text-on-surface-variant" title="Unblock Card">
+<span class="material-symbols-outlined">lock_open</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-tertiary-fixed-dim/10 border border-tertiary-fixed-dim/20 flex items-center justify-center text-tertiary-fixed-dim text-xs font-bold">MK</div>
+<div>
+<p class="font-bold text-on-surface">Marcus Knight</p>
+<p class="text-xs text-on-surface-variant">Premium Savings</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-on-surface">**** **** **** 1055</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">credit_card</span>
+<span class="text-sm">Visa Platinum</span>
+</div>
+</td>
+<td class="px-6 py-5 font-mono-data text-sm">03/24</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-outline-variant/15 text-on-surface-variant border border-outline-variant/30">Expired</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors text-on-surface-variant" title="Reissue Card">
+<span class="material-symbols-outlined">autorenew</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold">EW</div>
+<div>
+<p class="font-bold text-on-surface">Emily Wong</p>
+<p class="text-xs text-on-surface-variant">Joint Account</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-on-surface">**** **** **** 9934</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">credit_card</span>
+<span class="text-sm">Visa Signature</span>
+</div>
+</td>
+<td class="px-6 py-5 font-mono-data text-sm">12/28</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-secondary/15 text-secondary border border-secondary/30">Active</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg transition-colors text-on-surface-variant" title="Block Card">
+<span class="material-symbols-outlined">block</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between text-xs text-on-surface-variant font-medium">
+<p>Showing 1 to 4 of 12,482 entries</p>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-on-primary-container font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container-high">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container-high">3</button>
+<span class="px-2">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container-high">3,121</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Virtual Card Showcase / Detailed View Panel -->
+<div class="mt-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+<div class="space-y-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Card Security Actions</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="glass-card p-4 rounded-xl hover:border-primary-fixed-dim transition-all cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">password</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Reset Card PIN</h4>
+<p class="text-xs text-on-surface-variant">Send temporary secure code via SMS.</p>
+</div>
+<div class="glass-card p-4 rounded-xl hover:border-primary-fixed-dim transition-all cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">travel_explore</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Travel Settings</h4>
+<p class="text-xs text-on-surface-variant">Configure international spending limits.</p>
+</div>
+<div class="glass-card p-4 rounded-xl hover:border-primary-fixed-dim transition-all cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Spending Limits</h4>
+<p class="text-xs text-on-surface-variant">Adjust daily ATM and POS thresholds.</p>
+</div>
+<div class="glass-card p-4 rounded-xl hover:border-error transition-all cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 group-hover:bg-error group-hover:text-on-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Deactivate Card</h4>
+<p class="text-xs text-on-surface-variant">Permanent removal from registry.</p>
+</div>
+</div>
+</div>
+<!-- Card Design Preview -->
+<div class="glass-card rounded-xl p-8 border border-outline-variant flex flex-col items-center justify-center bg-gradient-to-br from-surface-container-low to-surface-container-highest">
+<div class="w-full max-w-sm aspect-[1.586/1] bg-gradient-to-br from-[#00dce5] via-[#006c71] to-[#0b1326] rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between border border-white/20">
+<!-- Card Shine Effect -->
+<div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+<div class="flex justify-between items-start relative z-10">
+<div class="w-12 h-10 bg-white/20 rounded border border-white/10 flex flex-col justify-center gap-1 p-2">
+<div class="h-0.5 w-full bg-white/30"></div>
+<div class="h-0.5 w-full bg-white/30"></div>
+<div class="h-0.5 w-full bg-white/30"></div>
+</div>
+<span class="font-bold italic text-white/90 text-xl tracking-tighter">NEXUS</span>
+</div>
+<div class="relative z-10">
+<p class="text-white/60 text-[10px] uppercase tracking-widest mb-1">Card Number</p>
+<p class="text-white text-xl font-mono-data tracking-[0.2em]">4291 1002 8554 2091</p>
+</div>
+<div class="flex justify-between items-end relative z-10">
+<div>
+<p class="text-white/60 text-[10px] uppercase tracking-widest mb-1">Card Holder</p>
+<p class="text-white font-medium tracking-wide">JOHNATHAN DOE</p>
+</div>
+<div class="text-right">
+<p class="text-white/60 text-[10px] uppercase tracking-widest mb-1">Expires</p>
+<p class="text-white font-mono-data">08/27</p>
+</div>
+</div>
+<!-- Holographic Element -->
+<div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+</div>
+<div class="mt-6 text-center">
+<p class="text-on-surface font-bold">Premium Visa Infinite</p>
+<p class="text-on-surface-variant text-sm">Visual preview for card printing &amp; virtual display.</p>
+<div class="flex gap-4 mt-6">
+<button class="px-4 py-2 bg-surface-variant rounded-lg text-sm font-bold border border-outline-variant hover:bg-surface-container-highest transition-all">Digital Copy</button>
+<button class="px-4 py-2 bg-primary-container text-on-primary-container rounded-lg text-sm font-bold hover:brightness-110 transition-all">Request Physical</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple interactive feedback for action buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                const originalScale = this.style.transform;
+                this.style.transform = 'scale(0.96)';
+                setTimeout(() => {
+                    this.style.transform = originalScale;
+                }, 100);
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+            searchInput.parentElement.classList.add('shadow-[0_0_20px_rgba(0,220,229,0.1)]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.02]');
+            searchInput.parentElement.classList.remove('shadow-[0_0_20px_rgba(0,220,229,0.1)]');
+        });
+    </script>
+</body></html>
