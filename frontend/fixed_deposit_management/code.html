@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Financial | Fixed Deposits</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+</style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+
+<main class="ml-64 min-h-screen">
+<header class="h-16 border-b border-slate-800 flex items-center justify-between px-8">
+<div class="text-slate-400 text-sm">Fixed Deposit Management</div>
+<div class="text-sm text-slate-300" id="userBadge"></div>
+</header>
+<section class="p-8 space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-3xl font-bold" id="pageTitle">Fixed Deposits</h2>
+<p class="text-slate-400 mt-1" id="pageSubtitle">Manage fixed deposits and maturity values.</p>
+</div>
+<button class="bg-cyan-400 text-slate-950 px-5 py-3 rounded-lg font-semibold flex items-center gap-2" id="newFdBtn">
+<span class="material-symbols-outlined">add</span> New Fixed Deposit
+      </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Total Principal</div><div class="text-2xl font-bold mt-2" id="totalPrincipal">—</div></div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Active FDs</div><div class="text-2xl font-bold mt-2" id="activeCount">—</div></div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Estimated Maturity</div><div class="text-2xl font-bold mt-2" id="estimatedMaturity">—</div></div>
+</div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+<div class="p-5 border-b border-slate-800 flex items-center justify-between">
+<h3 class="text-xl font-semibold" id="tableTitle">My Fixed Deposits</h3>
+<button class="px-3 py-2 border border-slate-700 rounded-lg hover:bg-slate-800" id="refreshBtn"><span class="material-symbols-outlined">refresh</span></button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead class="bg-slate-950 text-slate-400">
+<tr>
+<th class="text-left p-4">FD ID</th>
+<th class="text-left p-4">Customer</th>
+<th class="text-left p-4">Branch</th>
+<th class="text-left p-4">Principal</th>
+<th class="text-left p-4">Rate</th>
+<th class="text-left p-4">Start</th>
+<th class="text-left p-4">Maturity</th>
+<th class="text-left p-4">Est. Amount</th>
+<th class="text-left p-4">Status</th>
+<th class="text-left p-4">Actions</th>
+</tr>
+</thead>
+<tbody id="fdBody"></tbody>
+</table>
+</div>
+<div class="hidden p-10 text-center text-slate-400" id="emptyState">No fixed deposits found.</div>
+</div>
+</section>
+</main>
+<div class="hidden fixed inset-0 bg-black/70 z-[100] items-center justify-center p-4" id="fdModal">
+<div class="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl p-6">
+<div class="flex items-center justify-between mb-5">
+<h3 class="text-xl font-semibold">Create Fixed Deposit</h3>
+<button class="text-slate-400 hover:text-white" id="closeModal"><span class="material-symbols-outlined">close</span></button>
+</div>
+<form class="space-y-4" id="fdForm">
+<div class="hidden" id="staffCustomerWrap">
+<label class="text-sm text-slate-400">Customer ID</label>
+<input class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="customerId" placeholder="e.g. 1001" type="number"/>
+</div>
+<div>
+<label class="text-sm text-slate-400">Branch</label>
+<select class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="branchId" required=""></select>
+</div>
+<div>
+<label class="text-sm text-slate-400">Fixed Deposit Rate</label>
+<select class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="rateId" required=""></select>
+</div>
+<div>
+<label class="text-sm text-slate-400">Principal</label>
+<input class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="principal" min="1" placeholder="50000" required="" step="0.01" type="number"/>
+</div>
+<div>
+<label class="text-sm text-slate-400">Tenure (months)</label>
+<input class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="months" min="1" placeholder="12" required="" step="1" type="number"/>
+</div>
+<div>
+<label class="text-sm text-slate-400">Start Date</label>
+<input class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="startDate" type="date"/>
+</div>
+<div class="flex gap-3 justify-end pt-2">
+<button class="px-4 py-2 border border-slate-700 rounded-lg" id="cancelModal" type="button">Cancel</button>
+<button class="px-4 py-2 bg-cyan-400 text-slate-950 rounded-lg font-semibold" type="submit">Create FD</button>
+</div>
+</form>
+</div>
+</div>
+<script src="../shared/api.js"></script>
+<script src="./fixed_deposits.js"></script>
+<script src="../shared/app-shell.js"></script>
+</body>
+</html>

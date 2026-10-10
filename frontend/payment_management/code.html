@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Financial | Payments</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:FILL,wght@0,400;1,400&amp;display=swap" rel="stylesheet"/>
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+<main class="ml-64 min-h-screen">
+<header class="h-16 border-b border-slate-800 flex items-center justify-between px-8"><div class="text-slate-400 text-sm">Payment Management</div><div class="text-sm text-slate-300" id="userBadge"></div></header>
+<section class="p-8 space-y-6">
+<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+<div><h2 class="text-3xl font-bold" id="pageTitle">Payments</h2><p class="text-slate-400 mt-1" id="pageSubtitle">Make and review payments using your banking data.</p></div>
+<button class="bg-cyan-400 text-slate-950 px-5 py-3 rounded-lg font-semibold flex items-center gap-2" id="newPaymentBtn"><span class="material-symbols-outlined">add</span> New Payment</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Payments</div><div class="text-2xl font-bold mt-2" id="countCard">—</div></div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Successful</div><div class="text-2xl font-bold mt-2" id="successCard">—</div></div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Pending</div><div class="text-2xl font-bold mt-2" id="pendingCard">—</div></div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5"><div class="text-slate-400 text-sm">Total Amount</div><div class="text-2xl font-bold mt-2" id="amountCard">—</div></div>
+</div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+<div class="p-5 border-b border-slate-800 flex items-center justify-between"><h3 class="text-xl font-semibold" id="tableTitle">My Payments</h3><button class="px-3 py-2 border border-slate-700 rounded-lg hover:bg-slate-800" id="refreshBtn"><span class="material-symbols-outlined">refresh</span></button></div>
+<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-950 text-slate-400"><tr><th class="text-left p-4">Payment ID</th><th class="text-left p-4">Customer</th><th class="text-left p-4">Type</th><th class="text-left p-4">Beneficiary</th><th class="text-left p-4">Amount</th><th class="text-left p-4">Date</th><th class="text-left p-4">Status</th></tr></thead><tbody id="paymentBody"></tbody></table></div>
+<div class="hidden p-10 text-center text-slate-400" id="emptyState">No payments found.</div>
+</div>
+</section>
+</main>
+<div class="hidden fixed inset-0 bg-black/70 z-[100] items-center justify-center p-4" id="paymentModal">
+<div class="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl p-6">
+<div class="flex items-center justify-between mb-5"><h3 class="text-xl font-semibold">Create Payment</h3><button class="text-slate-400 hover:text-white" id="closeModal"><span class="material-symbols-outlined">close</span></button></div>
+<form class="space-y-4" id="paymentForm">
+<div><label class="text-sm text-slate-400">Source Account</label><select class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="accountNo" required=""></select></div>
+<div><label class="text-sm text-slate-400">Payment Type</label><select class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="paymentType" required=""><option value="">Choose type...</option><option>Fund Transfer</option><option>Bill Payment</option><option>Utility Payment</option><option>Merchant Payment</option></select></div>
+<div id="beneficiaryWrap"><label class="text-sm text-slate-400">Beneficiary <span class="text-xs text-slate-500">(required for Fund Transfer)</span></label><select class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="beneficiaryId"></select></div>
+<div><label class="text-sm text-slate-400">Amount</label><input class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg p-3" id="amount" min="0.01" placeholder="1000" required="" step="0.01" type="number"/></div>
+<p class="text-xs text-slate-500">Fund Transfer uses the selected beneficiary's internal account. Other payment types debit the selected source account and create a PAYMENT record.</p>
+<div class="flex gap-3 justify-end pt-2"><button class="px-4 py-2 border border-slate-700 rounded-lg" id="cancelModal" type="button">Cancel</button><button class="px-4 py-2 bg-cyan-400 text-slate-950 rounded-lg font-semibold" type="submit">Complete Payment</button></div>
+</form>
+</div>
+</div>
+<script src="../shared/api.js"></script>
+<script>
+let payments=[];
+let session=null;
+
+function money(v){ return Number(v||0).toLocaleString('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:2}); }
+function openModal(){ document.getElementById('paymentModal').classList.remove('hidden'); document.getElementById('paymentModal').classList.add('flex'); }
+function closeModal(){ document.getElementById('paymentModal').classList.add('hidden'); document.getElementById('paymentModal').classList.remove('flex'); }
+
+async function loadAccounts(){
+  const customerId = session?.role === 'Customer' ? session.user.customerid : null;
+  const url = customerId ? `/accounts?customerId=${encodeURIComponent(customerId)}` : '/accounts';
+  const r=await apiRequest(url);
+  const active=r.data.filter(a => String(a.status).toLowerCase()==='active');
+  const select=document.getElementById('accountNo');
+  select.innerHTML='<option value="">Choose account...</option>'+active.map(a=>`<option value="${a.accountno}">${a.accountno} • ${escapeHtml(a.accounttype)} • ${money(a.balance)}</option>`).join('');
+}
+
+async function loadBeneficiaries(){
+  const customerId=session?.role==='Customer'?session.user.customerid:null;
+  const select=document.getElementById('beneficiaryId');
+  if(!customerId){ select.innerHTML='<option value="">Select customer through login</option>'; return; }
+  const r=await apiRequest(`/beneficiaries?customerId=${encodeURIComponent(customerId)}`);
+  const active=r.data.filter(b=>String(b.status).toLowerCase()==='active');
+  select.innerHTML='<option value="">Choose beneficiary...</option>'+active.map(b=>`<option value="${b.beneficiaryid}">${escapeHtml(b.name)} • ${b.beneficiaryaccountno}</option>`).join('');
+}
+
+async function loadPayments(){
+  session=getSession();
+  if(!session) { window.location.href='/login/code.html'; return; }
+  document.getElementById('userBadge').textContent=`${session.user?.name || ''} • ${session.role || ''}`;
+  const role=session.role;
+  const customerId=role==='Customer'?session.user.customerid:null;
+  const query=new URLSearchParams({role});
+  if(customerId) query.set('customerId',customerId);
+  const r=await apiRequest(`/payments?${query.toString()}`);
+  payments=r.data;
+  document.getElementById('tableTitle').textContent=role==='Customer'?'My Payments':'All Payments';
+  document.getElementById('pageTitle').textContent=role==='Customer'?'My Payments':'Payment Management';
+  const success=payments.filter(p=>String(p.status).toLowerCase()==='success');
+  const pending=payments.filter(p=>String(p.status).toLowerCase()==='pending');
+  document.getElementById('countCard').textContent=payments.length;
+  document.getElementById('successCard').textContent=success.length;
+  document.getElementById('pendingCard').textContent=pending.length;
+  document.getElementById('amountCard').textContent=money(payments.reduce((s,p)=>s+Number(p.amount||0),0));
+  const body=document.getElementById('paymentBody');
+  body.innerHTML=payments.map(p=>`<tr class="border-t border-slate-800"><td class="p-4">${p.paymentid}</td><td class="p-4">${escapeHtml(p.customername)}</td><td class="p-4">${escapeHtml(p.type)}</td><td class="p-4">${p.beneficiaryname?escapeHtml(p.beneficiaryname):'—'}</td><td class="p-4">${money(p.amount)}</td><td class="p-4">${formatDateTime(p.datetime)}</td><td class="p-4"><span class="px-2 py-1 rounded-full text-xs ${p.status==='Success'?'bg-emerald-500/20 text-emerald-300':p.status==='Pending'?'bg-amber-500/20 text-amber-300':'bg-rose-500/20 text-rose-300'}">${escapeHtml(p.status)}</span></td></tr>`).join('');
+  document.getElementById('emptyState').classList.toggle('hidden',payments.length>0);
+}
+
+document.getElementById('newPaymentBtn').addEventListener('click',async()=>{
+  try { await loadAccounts(); await loadBeneficiaries(); openModal(); } catch(e){ showToast(e.message,'error'); }
+});
+document.getElementById('closeModal').onclick=closeModal;
+document.getElementById('cancelModal').onclick=closeModal;
+document.getElementById('refreshBtn').onclick=()=>loadPayments().catch(e=>showToast(e.message,'error'));
+document.getElementById('paymentType').addEventListener('change',e=>{ document.getElementById('beneficiaryWrap').classList.toggle('hidden',e.target.value!=='Fund Transfer'); if(e.target.value!=='Fund Transfer') document.getElementById('beneficiaryId').value=''; });
+document.getElementById('paymentForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  try{
+    if(session?.role!=='Customer') throw new Error('New payments are currently available for Customer accounts only.');
+    const type=document.getElementById('paymentType').value;
+    const beneficiaryId=document.getElementById('beneficiaryId').value;
+    const payload={customerId:session.user.customerid,accountNo:document.getElementById('accountNo').value,type,amount:Number(document.getElementById('amount').value),beneficiaryId:beneficiaryId||null};
+    const r=await apiRequest('/payments',{method:'POST',body:JSON.stringify(payload)});
+    showToast(r.message); closeModal(); document.getElementById('paymentForm').reset(); await loadPayments();
+  }catch(err){ showToast(err.message,'error'); }
+});
+
+document.addEventListener('DOMContentLoaded',()=>loadPayments().catch(e=>showToast(e.message,'error')));
+</script>
+<script src="../shared/app-shell.js"></script>
+</body>
+</html>

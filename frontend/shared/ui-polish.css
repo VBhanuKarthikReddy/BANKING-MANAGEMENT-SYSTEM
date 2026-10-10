@@ -1,0 +1,49 @@
+/* Shared Payments-style UI polish layer. */
+:root {
+  --ui-bg: #020617;
+  --ui-surface: #0f172a;
+  --ui-surface-2: #111827;
+  --ui-border: #1e293b;
+  --ui-primary: #22d3ee;
+  --ui-success: #34d399;
+  --ui-warning: #fbbf24;
+  --ui-danger: #fb7185;
+  --ui-muted: #94a3b8;
+}
+
+body { background: var(--ui-bg) !important; }
+
+/* Page-level cards, regardless of the original Tailwind surface class. */
+main section[class*="rounded"], main .glass, main .glass-card,
+main .bg-slate-900, main .bg-slate-950[class*="border"], main [class*="bg-surface-container"] {
+  border-color: var(--ui-border) !important;
+}
+
+/* Stronger consistency for controls. */
+main button, main a.btn { border-radius: 10px !important; }
+main input, main select, main textarea { border-radius: 10px !important; }
+
+/* Table rhythm */
+main table th { white-space: nowrap; }
+main table td { vertical-align: middle; }
+
+/* Status badges */
+.badge-success { background: rgba(52,211,153,.12) !important; color: var(--ui-success) !important; }
+.badge-warning { background: rgba(251,191,36,.12) !important; color: var(--ui-warning) !important; }
+.badge-danger { background: rgba(251,113,133,.12) !important; color: var(--ui-danger) !important; }
+
+/* Prevent old demo-only KPI percentages from looking authoritative. */
+.dashboard-demo-trend { color: var(--ui-muted) !important; font-weight: 600 !important; }
+
+/* Cleaner focus and selection treatment. */
+::selection { background: rgba(34,211,238,.25); color: #f8fafc; }
+
+/* Generic modal polish for existing pages. */
+[id$="Modal"], [id*="Modal"] { backdrop-filter: blur(6px); }
+
+/* Live-data cards start neutral while fetching, rather than pretending zero. */
+[data-live-loading="true"] { opacity: .78; }
+
+@media (max-width: 720px) {
+  main { padding-bottom: 24px; }
+}

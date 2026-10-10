@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Interest Rate Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+ body { background:#0b1326; color:#dae2fd; font-family:Inter, sans-serif; }
+ .glass-card { background:#171f33; border:1px solid #3a494a; }
+ .neon { color:#00dce5; }
+ .modal { background:#111a2d; border:1px solid #3a494a; }
+</style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="min-h-screen">
+<header class="border-b border-outline-variant bg-[#171f33] px-6 py-5 flex items-center justify-between">
+<div>
+<p class="text-xs uppercase tracking-widest text-slate-400">Nexus Bank • Admin</p>
+<h1 class="text-2xl font-bold mt-1">Interest Rate Management</h1>
+<p class="text-sm text-slate-400 mt-1">Manage deposit, fixed-deposit and loan interest rates.</p>
+</div>
+<a class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm" href="/admin_dashboard/code.html">Back to Dashboard</a>
+</header>
+<main class="p-6 md:p-8 max-w-7xl mx-auto">
+<div class="hidden mb-4 rounded-lg px-4 py-3 text-sm" id="message"></div>
+<section class="glass-card rounded-xl p-5 mb-6">
+<div class="flex flex-col md:flex-row gap-4 md:items-end md:justify-between">
+<div class="flex-1">
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-2">Search</label>
+<input class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-4 py-3 text-sm focus:border-cyan-400 focus:ring-cyan-400" id="search" placeholder="Search by rate type or product type..." type="text"/>
+</div>
+<button class="rounded-lg bg-cyan-500 text-slate-900 font-semibold px-5 py-3 hover:bg-cyan-400" id="addBtn">+ Add Interest Rate</button>
+</div>
+</section>
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center">
+<div>
+<h2 class="font-semibold">Interest Rates</h2>
+<p class="text-xs text-slate-400 mt-1" id="count">Loading...</p>
+</div>
+<button class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs" id="refreshBtn">Refresh</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead class="bg-[#0f182b] text-slate-400 text-xs uppercase">
+<tr>
+<th class="text-left px-5 py-4">Rate ID</th>
+<th class="text-left px-5 py-4">Rate Type</th>
+<th class="text-left px-5 py-4">Product Type</th>
+<th class="text-right px-5 py-4">Rate</th>
+<th class="text-left px-5 py-4">Effective From</th>
+<th class="text-left px-5 py-4">Effective To</th>
+<th class="text-right px-5 py-4">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-800" id="rows"></tbody>
+</table>
+</div>
+</section>
+</main>
+<div class="hidden fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" id="modal">
+<div class="modal rounded-xl w-full max-w-lg p-6">
+<div class="flex items-center justify-between mb-5">
+<div>
+<h3 class="text-lg font-semibold" id="modalTitle">Add Interest Rate</h3>
+<p class="text-xs text-slate-400 mt-1">Rate ID is generated automatically for new rates.</p>
+</div>
+<button class="text-slate-400 hover:text-white text-xl" id="closeBtn">×</button>
+</div>
+<form class="space-y-4" id="rateForm">
+<input id="rateId" type="hidden"/>
+<div>
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Rate Type</label>
+<select class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5" id="rateType" required="">
+<option value="Deposit">Deposit</option>
+<option value="Loan">Loan</option>
+</select>
+</div>
+<div>
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Product Type</label>
+<input class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5" id="productType" placeholder="e.g. Fixed Deposit" required=""/>
+</div>
+<div>
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Rate (%)</label>
+<input class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5" id="rate" max="99.99" min="0" required="" step="0.01" type="number"/>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Effective From</label>
+<input class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5" id="effectiveFrom" required="" type="date"/>
+</div>
+<div>
+<label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Effective To</label>
+<input class="w-full rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5" id="effectiveTo" type="date"/>
+</div>
+</div>
+<div class="flex justify-end gap-3 pt-2">
+<button class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600" id="cancelBtn" type="button">Cancel</button>
+<button class="px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400" type="submit">Save Rate</button>
+</div>
+</form>
+</div>
+</div>
+<script src="../shared/api.js"></script>
+<script>
+const session = JSON.parse(localStorage.getItem('bankingSession') || 'null');
+if (!session || !['Admin'].includes(session.role)) window.location.href = '/';
+const rowsEl = document.getElementById('rows');
+const searchEl = document.getElementById('search');
+const countEl = document.getElementById('count');
+const messageEl = document.getElementById('message');
+const modal = document.getElementById('modal');
+const form = document.getElementById('rateForm');
+let rates = [];
+function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(message, error=false) { messageEl.textContent=message; messageEl.className=`mb-4 rounded-lg px-4 py-3 text-sm ${error?'bg-red-900/50 text-red-200 border border-red-700':'bg-emerald-900/50 text-emerald-200 border border-emerald-700'}`; messageEl.classList.remove('hidden'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>messageEl.classList.add('hidden'),3000); }
+function formatDate(v){return v?new Date(v).toLocaleDateString('en-IN'):'—';}
+function render(){const q=searchEl.value.trim().toLowerCase(); const filtered=rates.filter(r=>!q||`${r.ratetype} ${r.producttype}`.toLowerCase().includes(q)); countEl.textContent=`${filtered.length} rate(s) shown`; rowsEl.innerHTML=filtered.map(r=>`<tr class="hover:bg-white/5"><td class="px-5 py-4 font-mono">${esc(r.rateid)}</td><td class="px-5 py-4">${esc(r.ratetype)}</td><td class="px-5 py-4">${esc(r.producttype)}</td><td class="px-5 py-4 text-right font-semibold neon">${Number(r.rate).toFixed(2)}%</td><td class="px-5 py-4">${formatDate(r.effectivefrom)}</td><td class="px-5 py-4">${formatDate(r.effectiveto)}</td><td class="px-5 py-4 text-right space-x-2"><button class="edit px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs" data-id="${r.rateid}">Edit</button><button class="delete px-3 py-1.5 rounded-lg bg-red-900/60 hover:bg-red-900 text-xs" data-id="${r.rateid}">Delete</button></td></tr>`).join('')||`<tr><td colspan="7" class="px-5 py-10 text-center text-slate-400">No rates found.</td></tr>`;}
+async function loadRates(){try{const result=await apiRequest('/interest-rates'); rates=result.data||[]; render();}catch(e){toast(e.message,true);}}
+function openModal(rate=null){form.reset(); document.getElementById('rateId').value=rate?.rateid||''; document.getElementById('rateType').value=rate?.ratetype||'Deposit'; document.getElementById('productType').value=rate?.producttype||''; document.getElementById('rate').value=rate?.rate??''; document.getElementById('effectiveFrom').value=rate?.effectivefrom?String(rate.effectivefrom).slice(0,10):new Date().toISOString().slice(0,10); document.getElementById('effectiveTo').value=rate?.effectiveto?String(rate.effectiveto).slice(0,10):''; document.getElementById('modalTitle').textContent=rate?`Edit Rate #${rate.rateid}`:'Add Interest Rate'; modal.classList.remove('hidden'); modal.classList.add('flex');}
+function closeModal(){modal.classList.add('hidden'); modal.classList.remove('flex');}
+document.getElementById('addBtn').addEventListener('click',()=>openModal()); document.getElementById('refreshBtn').addEventListener('click',loadRates); document.getElementById('closeBtn').addEventListener('click',closeModal); document.getElementById('cancelBtn').addEventListener('click',closeModal); searchEl.addEventListener('input',render);
+rowsEl.addEventListener('click',async e=>{const id=Number(e.target.dataset.id); if(!id)return; const rate=rates.find(r=>Number(r.rateid)===id); if(e.target.classList.contains('edit'))openModal(rate); if(e.target.classList.contains('delete')){if(!confirm(`Delete interest rate #${id}? If it is referenced by a loan or fixed deposit, PostgreSQL may reject the deletion.`))return; try{await apiRequest(`/interest-rates/${id}`,{method:'DELETE'}); toast('Interest rate deleted.'); await loadRates();}catch(err){toast(err.message,true);}}});
+form.addEventListener('submit',async e=>{e.preventDefault(); const id=document.getElementById('rateId').value; const body={rateType:document.getElementById('rateType').value,productType:document.getElementById('productType').value.trim(),rate:Number(document.getElementById('rate').value),effectiveFrom:document.getElementById('effectiveFrom').value,effectiveTo:document.getElementById('effectiveTo').value||null}; try{if(id){await apiRequest(`/interest-rates/${id}`,{method:'PUT',body:JSON.stringify(body)});toast('Interest rate updated.');}else{await apiRequest('/interest-rates',{method:'POST',body:JSON.stringify(body)});toast('Interest rate created.');}closeModal();await loadRates();}catch(err){toast(err.message,true);}});
+loadRates();
+</script>
+<script src="../shared/staff-dashboard-guard.js"></script>
+<script src="../shared/app-shell.js"></script>
+</body>
+</html>

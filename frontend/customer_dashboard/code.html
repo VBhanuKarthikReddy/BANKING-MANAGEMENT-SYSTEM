@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Dashboard - Nexus Financial</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+body{background:#07101f;color:#e7eefb;font-family:Inter,sans-serif}.glass{background:rgba(16,28,48,.78);border:1px solid rgba(148,163,184,.16);backdrop-filter:blur(14px)}.accent{color:#22d3ee}.muted{color:#93a4bb}.btn{background:#16d3b6;color:#03221e}.btn:hover{filter:brightness(1.06)}
+</style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="min-h-screen">
+
+<main class="ml-64 min-h-screen">
+<header class="sticky top-0 z-30 px-8 py-5 border-b border-white/10 bg-[#07101f]/90 backdrop-blur-xl flex items-center justify-between">
+<div><div class="text-xs uppercase tracking-[.2em] muted">Personal overview</div><h1 class="text-3xl font-extrabold mt-1">Good to see you, <span class="accent" id="customerName">Customer</span></h1></div>
+<div class="text-right"><div class="text-sm font-semibold" id="customerRole">Customer</div><div class="text-xs muted mt-1" id="customerIdLabel">ID —</div></div>
+</header>
+<div class="p-8 space-y-7">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+<div class="glass rounded-2xl p-6"><div class="muted text-sm">Available balance</div><div class="text-3xl font-extrabold mt-3" id="totalBalance">₹0.00</div><div class="text-xs text-emerald-300 mt-2">Across your accounts</div></div>
+<div class="glass rounded-2xl p-6"><div class="muted text-sm">My accounts</div><div class="text-3xl font-extrabold mt-3" id="accountCount">0</div><div class="text-xs muted mt-2">Active and non-active accounts</div></div>
+<div class="glass rounded-2xl p-6"><div class="muted text-sm">Active loans</div><div class="text-3xl font-extrabold mt-3" id="loanCount">0</div><div class="text-xs muted mt-2" id="loanPrincipal">₹0.00 principal</div></div>
+<div class="glass rounded-2xl p-6"><div class="muted text-sm">My cards</div><div class="text-3xl font-extrabold mt-3" id="cardCount">0</div><div class="text-xs muted mt-2">Debit + credit</div></div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<section class="glass rounded-2xl overflow-hidden xl:col-span-2">
+<div class="p-6 border-b border-white/10 flex items-center justify-between"><div><h2 class="text-xl font-bold">Recent transactions</h2><p class="text-sm muted mt-1">Latest activity across your accounts</p></div><a class="text-sm accent" href="/transaction_management/code.html">View all</a></div>
+<div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="text-xs uppercase tracking-wider muted border-b border-white/10"><th class="px-6 py-4">Type</th><th class="px-6 py-4">Account</th><th class="px-6 py-4">Amount</th><th class="px-6 py-4">Date</th><th class="px-6 py-4">Status</th></tr></thead><tbody id="recentTransactions"></tbody></table></div>
+</section>
+<section class="glass rounded-2xl overflow-hidden"><div class="p-6 border-b border-white/10"><h2 class="text-xl font-bold">Upcoming loan payments</h2><p class="text-sm muted mt-1">Next items requiring attention</p></div><div class="p-5 space-y-3" id="upcomingPayments"></div></section>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<section class="glass rounded-2xl p-6"><div class="flex items-center justify-between mb-5"><div><h2 class="text-xl font-bold">My loans</h2><p class="text-sm muted mt-1">Current applications and approved loans</p></div><a class="text-sm accent" href="/loan_management/code.html">Manage</a></div><div class="space-y-3" id="loansList"></div></section>
+<section class="glass rounded-2xl p-6"><div class="flex items-center justify-between mb-5"><div><h2 class="text-xl font-bold">My cards</h2><p class="text-sm muted mt-1">Current debit and credit cards</p></div><a class="text-sm accent" href="/card_management/code.html">Manage</a></div><div class="space-y-3" id="cardsList"></div></section>
+</div>
+<section class="glass rounded-2xl p-6"><div class="flex flex-wrap gap-3"><a class="btn px-5 py-3 rounded-xl font-bold" href="/transaction_management/code.html">Transfer money</a><a class="px-5 py-3 rounded-xl font-bold border border-white/10 hover:bg-white/5" href="/account_management/code.html">Manage accounts</a><a class="px-5 py-3 rounded-xl font-bold border border-white/10 hover:bg-white/5" href="/fixed_deposit_management/code.html">View fixed deposits</a></div></section>
+</div>
+</main>
+<script src="../shared/api.js"></script>
+<script>
+const money = v => formatMoney(Number(v||0));
+const esc = v => escapeHtml(v);
+function session(){try{return JSON.parse(localStorage.getItem('bankingSession')||'null')}catch(_){return null}}
+function statusClass(s){return s==='Active'||s==='Approved'||s==='Success'?'text-emerald-300':'text-amber-300'}
+async function load(){
+  const s=session(); if(!s||s.role!=='Customer'){location.replace('/login/code.html');return;}
+  document.getElementById('customerName').textContent=s.user.name||'Customer';
+  document.getElementById('customerIdLabel').textContent='Customer ID '+(s.user.customerid??s.user.CustomerID);
+  let r;
+  try {
+    r=await apiRequest('/customer-dashboard');
+  } catch (e) {
+    showToast(`Dashboard data could not be loaded: ${e.message}`, 'error');
+    return;
+  }
+  const x=r.summary||{};
+  document.getElementById('totalBalance').textContent=money(x.total_balance);
+  document.getElementById('accountCount').textContent=Number(x.account_count||0);
+  document.getElementById('loanCount').textContent=Number(x.active_loans||0);
+  document.getElementById('loanPrincipal').textContent=money(x.loan_principal)+' principal';
+  document.getElementById('cardCount').textContent=Number(x.card_count||0);
+  document.querySelectorAll('[data-live-loading="true"]').forEach(el=>el.removeAttribute('data-live-loading'));
+  document.getElementById('recentTransactions').innerHTML=(r.recentTransactions||[]).map(t=>`<tr class="border-b border-white/5"><td class="px-6 py-4 font-semibold">${esc(t.type)}</td><td class="px-6 py-4 font-mono text-sm">${esc(t.accountno)}</td><td class="px-6 py-4 font-semibold">${money(t.amount)}</td><td class="px-6 py-4 text-sm muted">${formatDateTime(t.datetime)}</td><td class="px-6 py-4 text-sm ${statusClass(t.status)}">${esc(t.status)}</td></tr>`).join('')||'<tr><td colspan="5" class="px-6 py-10 text-center muted">No transactions yet.</td></tr>' ;
+  document.getElementById('loansList').innerHTML=(r.loans||[]).map(l=>`<div class="flex items-center justify-between p-4 rounded-xl bg-white/[.03] border border-white/5"><div><div class="font-semibold">#${esc(l.loanid)} · ${esc(l.type)}</div><div class="text-xs muted mt-1">${Number(l.tenure||0)} months</div></div><div class="text-right"><div class="font-bold">${money(l.principal)}</div><div class="text-xs ${statusClass(l.status)} mt-1">${esc(l.status)}</div></div></div>`).join('')||'<div class="py-8 text-center muted">No loans found.</div>' ;
+  document.getElementById('cardsList').innerHTML=(r.cards||[]).map(c=>`<div class="flex items-center justify-between p-4 rounded-xl bg-white/[.03] border border-white/5"><div><div class="font-semibold">${esc(c.cardtype)} card</div><div class="text-xs muted mt-1 font-mono">${esc(c.maskedcardno||'Card')}</div></div><div class="text-right"><div class="text-xs ${statusClass(c.status)}">${esc(c.status)}</div><div class="text-xs muted mt-1">Expires ${esc(formatDate(c.expirydate))}</div></div></div>`).join('')||'<div class="py-8 text-center muted">No cards found.</div>' ;
+  document.getElementById('upcomingPayments').innerHTML=(r.upcomingPayments||[]).map(p=>`<div class="p-4 rounded-xl bg-white/[.03] border border-white/5"><div class="flex justify-between gap-3"><div><div class="font-semibold">Loan #${esc(p.loanid)}</div><div class="text-xs muted mt-1">Due ${esc(formatDate(p.duedate))}</div></div><div class="font-bold">${money(p.amount)}</div></div></div>`).join('')||'<div class="py-8 text-center muted">No upcoming payments.</div>' ;
+}
+load().catch(e=>showToast(e.message,'error'));
+</script>
+<script src="../shared/app-shell.js"></script>
+</body>
+</html>

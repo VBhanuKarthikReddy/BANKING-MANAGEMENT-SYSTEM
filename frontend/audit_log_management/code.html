@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audit Log Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght@100..700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+body{background:#0b1326;color:#dae2fd;font-family:Inter,sans-serif}.glass{background:#171f33;border:1px solid #3a494a}
+</style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="min-h-screen">
+<header class="border-b border-slate-700 bg-[#171f33] px-6 py-5 flex items-center justify-between gap-4">
+<div><p class="text-xs uppercase tracking-widest text-slate-400">Nexus Bank • Staff</p><h1 class="text-2xl font-bold mt-1">Audit Log Management</h1><p class="text-sm text-slate-400 mt-1">Read-only activity history from the AUDIT_LOG table.</p></div>
+<a class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm" href="/admin_dashboard/code.html">Back to Dashboard</a>
+</header>
+<main class="p-6 md:p-8 max-w-7xl mx-auto">
+<div class="hidden mb-4 rounded-lg px-4 py-3 text-sm" id="message"></div>
+<section class="glass rounded-xl p-5 mb-6">
+<div class="grid md:grid-cols-3 lg:grid-cols-6 gap-3">
+<input class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="search" placeholder="Search..."/>
+<input class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="employeeId" placeholder="Employee ID" type="number"/>
+<select class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="module"><option value="">All Modules</option><option>Customer</option><option>Account</option><option>Transaction</option><option>Loan</option><option>DebitCard</option><option>Beneficiary</option><option>FixedDeposit</option></select>
+<select class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="status"><option value="">All Statuses</option><option>Success</option><option>Failed</option></select>
+<input class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="from" type="date"/>
+<input class="rounded-lg bg-[#0d1629] border border-slate-600 px-3 py-2.5 text-sm" id="to" type="date"/>
+</div>
+<div class="flex justify-end gap-3 mt-4"><button class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm" id="clearBtn">Clear</button><button class="px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 text-sm" id="refreshBtn">Refresh</button></div>
+</section>
+<section class="glass rounded-xl overflow-hidden">
+<div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between"><div><h2 class="font-semibold">Audit Entries</h2><p class="text-xs text-slate-400 mt-1" id="count">Loading...</p></div><span class="text-xs text-slate-400">Read-only</span></div>
+<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-[#0f182b] text-slate-400 text-xs uppercase"><tr><th class="text-left px-5 py-4">Audit ID</th><th class="text-left px-5 py-4">Employee</th><th class="text-left px-5 py-4">Role</th><th class="text-left px-5 py-4">Operation</th><th class="text-left px-5 py-4">Module</th><th class="text-left px-5 py-4">Date / Time</th><th class="text-left px-5 py-4">Status</th></tr></thead><tbody class="divide-y divide-slate-800" id="rows"></tbody></table></div>
+</section>
+</main>
+<script src="../shared/api.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function showMessage(msg,error=false){const el=$('message');el.textContent=msg;el.className=`mb-4 rounded-lg px-4 py-3 text-sm ${error?'bg-red-900/40 text-red-200':'bg-emerald-900/40 text-emerald-200'}`}
+async function load(){try{
+ const p=new URLSearchParams();
+ [['search','search'],['employeeId','employeeId'],['module','module'],['status','status'],['from','from'],['to','to']].forEach(([id,key])=>{const v=$(id).value.trim();if(v)p.set(key,v)});
+ const r=await apiRequest('/audit-logs'+(p.toString()?'?'+p.toString():''));
+ $('count').textContent=`Showing ${r.count} audit entr${r.count===1?'y':'ies'}`;
+ $('rows').innerHTML=r.data.length?r.data.map(x=>`<tr class="hover:bg-slate-800/30"><td class="px-5 py-4 font-mono">#${x.auditid}</td><td class="px-5 py-4">${esc(x.employeename)} <span class="text-slate-500">(${x.employeeid})</span></td><td class="px-5 py-4">${esc(x.employeerole)}</td><td class="px-5 py-4">${esc(x.operation)}</td><td class="px-5 py-4">${esc(x.module)}</td><td class="px-5 py-4">${esc(new Date(x.datetime).toLocaleString())}</td><td class="px-5 py-4"><span class="px-2 py-1 rounded-full text-xs ${x.status==='Success'?'bg-emerald-900/50 text-emerald-300':'bg-red-900/50 text-red-300'}">${esc(x.status)}</span></td></tr>`).join(''):'<tr><td colspan="7" class="px-5 py-12 text-center text-slate-500">No audit entries found.</td></tr>';
+ }catch(e){showMessage(e.message,true)}}
+$('refreshBtn').onclick=load;
+$('clearBtn').onclick=()=>{['search','employeeId','module','status','from','to'].forEach(id=>$(id).value='');load()};
+['search','employeeId','module','status','from','to'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{clearTimeout(window.auditTimer);window.auditTimer=setTimeout(load,300)}));
+load();
+</script>
+<script src="../shared/staff-dashboard-guard.js"></script>
+<script src="../shared/app-shell.js"></script>
+</body></html>

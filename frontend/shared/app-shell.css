@@ -1,0 +1,134 @@
+:root {
+  --shell-bg: #020617;
+  --shell-surface: #0f172a;
+  --shell-surface-2: #111827;
+  --shell-border: #1e293b;
+  --shell-text: #e2e8f0;
+  --shell-muted: #94a3b8;
+  --shell-cyan: #22d3ee;
+  --shell-green: #34d399;
+  --shell-danger: #fb7185;
+  --shell-amber: #fbbf24;
+}
+
+html, body { background: var(--shell-bg) !important; color: var(--shell-text) !important; }
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  min-height: 100vh;
+}
+body:not(.shell-ready) { visibility: hidden; }
+
+aside {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: 256px !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  background: #020617 !important;
+  border-right: 1px solid var(--shell-border) !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+.shell-brand { padding: 8px 10px 22px; }
+.shell-brand-name { color: var(--shell-cyan); font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.shell-brand-subtitle { color: var(--shell-muted); font-size: 13px; margin-top: 4px; }
+
+aside nav { flex: 1 1 auto; overflow-y: auto; }
+.shell-nav-link {
+  min-height: 42px;
+  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 2px 0 !important;
+  padding: 10px 12px !important;
+  border-radius: 9px !important;
+  color: #cbd5e1 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  text-decoration: none !important;
+  box-sizing: border-box;
+  transition: background .15s ease, color .15s ease, border-color .15s ease !important;
+}
+.shell-nav-link:hover { background: #111827 !important; color: #f8fafc !important; }
+.shell-nav-link.shell-active {
+  background: rgba(16,185,129,.16) !important;
+  border-color: rgba(52,211,153,.12) !important;
+  color: var(--shell-green) !important;
+  font-weight: 700 !important;
+}
+.shell-nav-link .material-symbols-outlined { font-size: 20px !important; color: currentColor !important; }
+
+.shell-user-area { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--shell-border); }
+.shell-user { padding: 0 12px 12px; }
+.shell-user-name { color: #f8fafc; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shell-user-meta { color: var(--shell-muted); font-size: 12px; margin-top: 3px; }
+.shell-logout {
+  width: 100%; min-height: 42px; display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 9px; border: 1px solid transparent;
+  background: transparent; color: #fda4af; font: inherit; font-weight: 600; cursor: pointer;
+}
+.shell-logout:hover { background: rgba(244,63,94,.08); border-color: rgba(251,113,133,.12); color: #fecdd3; }
+
+main { margin-left: 256px !important; min-height: 100vh !important; min-width: 0 !important; background: var(--shell-bg) !important; }
+header {
+  min-height: 64px !important;
+  background: rgba(2,6,23,.92) !important;
+  border-bottom: 1px solid var(--shell-border) !important;
+  backdrop-filter: blur(14px);
+}
+
+/* Common banking surfaces */
+.glass, .glass-card, .bg-slate-900, .bg-surface-container, .bg-surface-container-low,
+section.glass, section.glass-card {
+  background: var(--shell-surface) !important;
+  border-color: var(--shell-border) !important;
+  box-shadow: none !important;
+}
+
+input, select, textarea {
+  background: #020617 !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+input::placeholder, textarea::placeholder { color: #64748b !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--shell-cyan) !important;
+  box-shadow: 0 0 0 2px rgba(34,211,238,.12) !important;
+}
+
+table { color: var(--shell-text) !important; }
+thead { background: #020617 !important; }
+th { color: #94a3b8 !important; font-size: 11px !important; letter-spacing: .08em !important; text-transform: uppercase !important; }
+tbody tr:hover { background: rgba(255,255,255,.025) !important; }
+
+button.bg-cyan-400, button.bg-emerald-400, a.bg-cyan-400, a.btn, .btn {
+  background: var(--shell-cyan) !important;
+  color: #082f36 !important;
+  border-color: transparent !important;
+  font-weight: 700 !important;
+}
+button.bg-cyan-400:hover, button.bg-emerald-400:hover, a.bg-cyan-400:hover, a.btn:hover, .btn:hover { filter: brightness(1.05); }
+
+.text-cyan-400, .text-cyan-300, .accent, .text-primary { color: var(--shell-cyan) !important; }
+.text-emerald-300, .text-secondary, .text-secondary-container { color: var(--shell-green) !important; }
+.text-slate-400, .text-on-surface-variant, .muted { color: var(--shell-muted) !important; }
+
+/* Make common page cards closer to the Payments design. */
+main > section, main > div { max-width: 1600px; }
+main h1, main h2, main h3 { letter-spacing: -.01em; }
+
+@media (max-width: 900px) {
+  aside { width: 224px !important; }
+  main { margin-left: 224px !important; }
+}
+@media (max-width: 720px) {
+  aside { width: 100% !important; height: auto !important; position: sticky !important; top: 0 !important; max-height: 70vh; }
+  main { margin-left: 0 !important; }
+  .shell-user-area { margin-top: 8px; }
+}

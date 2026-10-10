@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Branch Management | Nexus Financial</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#171f33",
+                    "secondary-container": "#00a572",
+                    "on-error": "#690005",
+                    "on-tertiary-fixed-variant": "#544600",
+                    "inverse-primary": "#00696e",
+                    "surface-container-lowest": "#060e20",
+                    "on-secondary-fixed": "#002113",
+                    "on-background": "#dae2fd",
+                    "on-primary-fixed": "#002021",
+                    "outline": "#849495",
+                    "surface": "#0b1326",
+                    "on-surface": "#dae2fd",
+                    "tertiary-fixed-dim": "#e7c427",
+                    "surface-container-high": "#222a3d",
+                    "tertiary-container": "#ffdb3f",
+                    "surface-dim": "#0b1326",
+                    "secondary-fixed": "#6ffbbe",
+                    "surface-container-highest": "#2d3449",
+                    "error-container": "#93000a",
+                    "tertiary": "#fff9f0",
+                    "on-primary-fixed-variant": "#004f53",
+                    "error": "#ffb4ab",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary": "#3a3000",
+                    "on-secondary": "#003824",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-primary": "#003739",
+                    "background": "#0b1326",
+                    "primary-fixed-dim": "#00dce5",
+                    "on-surface-variant": "#b9caca",
+                    "outline-variant": "#3a494a",
+                    "primary-fixed": "#63f7ff",
+                    "primary": "#e9feff",
+                    "surface-tint": "#00dce5",
+                    "on-tertiary-fixed": "#221b00",
+                    "secondary": "#4edea3",
+                    "surface-container-low": "#131b2e",
+                    "surface-bright": "#31394d",
+                    "on-secondary-fixed-variant": "#005236",
+                    "primary-container": "#00f5ff",
+                    "surface-variant": "#2d3449",
+                    "on-secondary-container": "#00311f",
+                    "tertiary-fixed": "#ffe16c",
+                    "on-tertiary-container": "#736000",
+                    "inverse-on-surface": "#283044",
+                    "on-primary-container": "#006c71",
+                    "inverse-surface": "#dae2fd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "mono-data": ["monospace"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-data": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        .primary-glow {
+            box-shadow: 0 0 20px rgba(0, 220, 229, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="overflow-hidden">
+<!-- Sidebar Navigation -->
+
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 h-16 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant dark:border-outline-variant flex items-center justify-between px-8 w-[calc(100%-16rem)] ml-64 z-40">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 font-body-sm text-body-sm focus:outline-none focus:border-primary-fixed-dim transition-all" placeholder="Search systems, transactions, or entities..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors cursor-pointer active:scale-95 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors cursor-pointer active:scale-95 transition-transform">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors cursor-pointer active:scale-95 transition-transform">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 px-8 pb-8 h-screen overflow-y-auto bg-background">
+<!-- Header Section with Animation Background -->
+<div class="relative mb-8 rounded-xl overflow-hidden p-8 border border-outline-variant">
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Branch Ecosystem</h2>
+<p class="text-on-surface-variant font-body-lg text-body-lg max-w-xl mt-2">Oversee regional operations, monitor liquidity deposits, and manage infrastructure status across the global Nexus network.</p>
+</div>
+<button class="bg-primary-fixed-dim text-on-primary-fixed font-label-caps text-label-caps px-6 py-3 rounded-lg flex items-center gap-2 primary-glow hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+                    Add New Branch
+                </button>
+</div>
+</div>
+<!-- Filter & Search Panel -->
+<div class="glass-panel rounded-xl p-6 mb-8 flex flex-wrap items-center gap-6">
+<div class="flex-1 min-w-[300px]">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Quick Filter</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">filter_list</span>
+<input class="w-full bg-background border border-outline-variant rounded-lg pl-10 pr-4 py-2 font-body-sm text-body-sm focus:border-primary transition-all" placeholder="Filter by branch code or manager..." type="text"/>
+</div>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Region</label>
+<select class="bg-background border border-outline-variant rounded-lg px-4 py-2 font-body-sm text-body-sm focus:border-primary min-w-[160px] appearance-none cursor-pointer">
+<option>Global (All)</option>
+<option>North America</option>
+<option>EMEA</option>
+<option>APAC</option>
+<option>Latin America</option>
+</select>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Network Status</label>
+<select class="bg-background border border-outline-variant rounded-lg px-4 py-2 font-body-sm text-body-sm focus:border-primary min-w-[160px] appearance-none cursor-pointer">
+<option>All States</option>
+<option>Active</option>
+<option>Maintenance</option>
+<option>Offline</option>
+</select>
+</div>
+<div class="flex items-end h-full self-end">
+<button class="border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-2 rounded-lg font-body-sm text-body-sm flex items-center gap-2">
+<span class="material-symbols-outlined">refresh</span>
+                    Reset
+                </button>
+</div>
+</div>
+<!-- Branch Data Grid -->
+<div class="glass-panel rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest/50">
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Branch Name &amp; Code</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Region / Location</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Manager</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Total Deposits</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-bright/20 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">store</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-primary">Manhattan Hub</p>
+<p class="font-mono-data text-mono-data text-on-surface-variant">NX-NY-001</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-body-sm text-body-sm text-on-surface">New York
+     City, USA</p>
+<p class="text-[11px] text-on-surface-variant font-label-caps uppercase tracking-widest">North America</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Corporate portrait of a bank manager, wearing professional business attire with a neutral background. The lighting is crisp and modern, fitting for a high-end financial application. Subtle shadows and high-contrast styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0ICqjv0_c1XhhQnmNF0m78LBi2iRSIiOFbir4zn9qba-hp9GUxrONwzsZay5ewlP20xg7Mfj4fsFfrfsHaP-n5gwnjFNpS3ePDJdm6I_Y1Pf3uMR285TIB8oWWL33bgCEQPiSXlEEVYJENZdWGiE_qnHGHJp0QokgVQ2bw0hbO2OzfI-njbylmG3YT1R2rSvkM4zOndInIdDtIdnUdg1IvC__NrsP-tTFUYH5WKRApx4UAU21uLd7"/>
+<p class="font-body-sm text-body-sm text-on-surface">Eleanor Vance</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">₹1.24B</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 85%"></div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-secondary-container/15 text-secondary text-[11px] font-bold border border-secondary/20">ACTIVE</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-bright/20 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">store</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-primary">London City Gate</p>
+<p class="font-mono-data text-mono-data text-on-surface-variant">NX-LDN-042</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-body-sm text-body-sm text-on-surface">London, UK</p>
+<p class="text-[11px] text-on-surface-variant font-label-caps uppercase tracking-widest">EMEA</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Portrait of a male banking professional, senior manager, in a minimalist office setting. Photorealistic style with soft key lighting and a dark blue color palette to match a fintech UI. Sharp focus on eyes and expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbk9F1pYtdY0f-nCK58bpUMCkJWxcMejcSx97zyaEC6HdwSTIqKf2u5afO9LnJemKgCynF9vw4UGznWhTAVOjUUgIBdf7WzKFuSlujT8sdpT6ffa_aQbHpFYiUU8GRTrbF8qbKZilK-a04LrQy0HXYdq_HlEMpNTzwCKWq4e_dZgnDBAtWNkCOOiSXeUZ-kDdR55NJ-JAJg1s9WCta8nIZr4HPlc29vDigsCaW75MPCATHmax1DGoc"/>
+<p class="font-body-sm text-body-sm text-on-surface">Marcus Sterling</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">$942.5M</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 62%"></div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-secondary-container/15 text-secondary text-[11px] font-bold border border-secondary/20">ACTIVE</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-bright/20 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary-container/20 flex items-center justify-center text-tertiary-fixed-dim">
+<span class="material-symbols-outlined">build</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-primary">Tokyo Sky Plaza</p>
+<p class="font-mono-data text-mono-data text-on-surface-variant">NX-TKY-015</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-body-sm text-body-sm text-on-surface">Minato-ku, Japan</p>
+<p class="text-[11px] text-on-surface-variant font-label-caps uppercase tracking-widest">APAC</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Portrait of an East Asian female bank manager, modern aesthetic, professional attire, studio lighting, deep slate and electric cyan highlights, 8k resolution, cinematic atmosphere, fintech executive look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBq7XFOE-Paur6ucWFwGYwp4rJgXqoOOTP4kBYwIqFSk-M1EiCP1MNS7Sgjrz1b41oQu_wsWoN8qF-FDES4seJdc8JxWH9B2yMH96-uf6y7_SNxrznhqSuZ6sQk06tTnfX59VXhcxjYHbOrcL312gx0F2ACPrR0fNxbVvMn1yysM15UAhElbNdpa3JLKyNS_ON7IbD2jq8qLaBv0UoDp0MmHxTXpT7Vsyb0pVUL3b-03xu3XvyBIPus"/>
+<p class="font-body-sm text-body-sm text-on-surface">Yuna Tanaka</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">$678.1M</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 45%"></div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-tertiary-container/15 text-tertiary-fixed-dim text-[11px] font-bold border border-tertiary-fixed-dim/20">MAINTENANCE</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-bright/20 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">store</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-primary">Singapore Central</p>
+<p class="font-mono-data text-mono-data text-on-surface-variant">NX-SIN-009</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-body-sm text-body-sm text-on-surface">Marina Bay, Singapore</p>
+<p class="text-[11px] text-on-surface-variant font-label-caps uppercase tracking-widest">APAC</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Close-up face portrait of a professional banker, wearing glasses, sharp business clothing, in front of a subtly blurred city background at night. High-contrast lighting with a focus on professional tech aesthetic, deep blues and glowing cyan accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgTdIPrTdb4E1fyfgtbF6M95zdsnne2UtDx74OmKGi76igWr8Yj7OeIYcKg_VSyTfIcm_l2MnKZ7ozgKbLzi1SWCl08HxH8Fj2tIdH37u_VB-fUdv553GkSUE8xx49Bhawxrdem0T7Th9u08alHl_-D5D99rP0g0nXNxjo2ZNlmwWWNxj6ewbw0qFTmSUNvT8u3RmgnbWOLS8Ltglr_90qsfEfKzok0zyZVVUj3xOU9WBR9kGlOnkv"/>
+<p class="font-body-sm text-body-sm text-on-surface">David Chen</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">₹2.15B</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 95%"></div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-secondary-container/15 text-secondary text-[11px] font-bold border border-secondary/20">ACTIVE</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-bright/20 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">error</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-semibold text-primary">Berlin Nexus</p>
+<p class="font-mono-data text-mono-data text-on-surface-variant">NX-BER-028</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-body-sm text-body-sm text-on-surface">Berlin, Germany</p>
+<p class="text-[11px] text-on-surface-variant font-label-caps uppercase tracking-widest">EMEA</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Portrait of a young executive male manager, sharp gaze, modern suit, clean professional studio setting. The image is styled for a high-end fintech platform using a dark mode aesthetic with electric cyan lighting accents and deep shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEJHAo3scjuIXufxyefah2Nh0fLCnaLgC-XcRZ5HLJpmhofch34xfB5eDzJMYJh6-mTvwIcwX2SMs8_IJF_5gl9XNaQpWr1x_LfV_gXn3Q0WkGeblzh2Hv21F-OQ7-nFQ2wRJz8MGZjcm62BpBxXvh7pGbo5aIqC1CAdBSVatCnXu_seKQYtHyVbmW5D9Zq0MZZKbE9cZmMkKsmIdbXDfv9gCE682vh4HIiipt6Ub0oS42d3LHd3cb"/>
+<p class="font-body-sm text-body-sm text-on-surface">Lukas Schmidt</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="font-mono-data text-mono-data text-primary-fixed-dim">$112.4M</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 12%"></div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-error-container/15 text-error text-[11px] font-bold border border-error/20">OFFLINE</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Component -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-outline-variant bg-surface-container-lowest/50">
+<p class="font-body-sm text-body-sm text-on-surface-variant"><span id="branchCountLabel">Loading branch data…</span></p>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:border-primary disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-primary bg-primary/10 text-primary font-mono-data text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:border-primary font-mono-data text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:border-primary font-mono-data text-sm">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:border-primary">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Metric Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-secondary">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-caps text-label-caps text-on-surface-variant" id="branchMetric1Title">Total Branch Deposits</p>
+<span class="material-symbols-outlined text-secondary">trending_up</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary" id="branchMetric1Value">—</h3>
+<p class="text-secondary font-body-sm text-body-sm mt-1" id="branchMetric1Sub">Live PostgreSQL aggregate</p>
+</div>
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-primary-fixed-dim">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-caps text-label-caps text-on-surface-variant" id="branchMetric2Title">Total Accounts</p>
+<span class="material-symbols-outlined text-primary-fixed-dim">speed</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary" id="branchMetric2Value">—</h3>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1" id="branchMetric2Sub">Across all branches</p>
+</div>
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-tertiary-fixed-dim">
+<div class="flex justify-between items-start mb-4">
+<p class="font-label-caps text-label-caps text-on-surface-variant" id="branchMetric3Title">Total Customers</p>
+<span class="material-symbols-outlined text-tertiary-fixed-dim">event</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary" id="branchMetric3Value">—</h3>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1" id="branchMetric3Sub">Across all branches</p>
+</div>
+</div>
+</main>
+<!-- Contextual FAB - Suppression Rule Check: Active for main Dashboard/List view -->
+<button class="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-secondary text-on-secondary shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<script>
+        // Micro-interaction for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Mock selection effect
+                document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-primary-container/10'));
+                row.classList.add('bg-primary-container/10');
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.02]');
+        });
+    </script>
+<script src="../shared/api.js"></script>
+<script src="../shared/branches.js"></script>
+<script src="../shared/staff-dashboard-guard.js"></script>
+<script src="../shared/app-shell.js"></script>
+</body></html>

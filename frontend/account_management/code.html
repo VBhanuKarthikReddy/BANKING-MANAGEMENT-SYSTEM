@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Financial | Accounts Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        .neon-glow-primary {
+            box-shadow: 0 0 15px rgba(0, 220, 229, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3a494a;
+            border-radius: 10px;
+        }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .status-pulse {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#171f33",
+                        "secondary-container": "#00a572",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "inverse-primary": "#00696e",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary-fixed": "#002113",
+                        "on-background": "#dae2fd",
+                        "on-primary-fixed": "#002021",
+                        "outline": "#849495",
+                        "surface": "#0b1326",
+                        "on-surface": "#dae2fd",
+                        "tertiary-fixed-dim": "#e7c427",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-container": "#ffdb3f",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "tertiary": "#fff9f0",
+                        "on-primary-fixed-variant": "#004f53",
+                        "error": "#ffb4ab",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3a3000",
+                        "on-secondary": "#003824",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#003739",
+                        "background": "#0b1326",
+                        "primary-fixed-dim": "#00dce5",
+                        "on-surface-variant": "#b9caca",
+                        "outline-variant": "#3a494a",
+                        "primary-fixed": "#63f7ff",
+                        "primary": "#e9feff",
+                        "surface-tint": "#00dce5",
+                        "on-tertiary-fixed": "#221b00",
+                        "secondary": "#4edea3",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed-variant": "#005236",
+                        "primary-container": "#00f5ff",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed": "#ffe16c",
+                        "on-tertiary-container": "#736000",
+                        "inverse-on-surface": "#283044",
+                        "on-primary-container": "#006c71",
+                        "inverse-surface": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "mono-data": ["monospace"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-data": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<body class="bg-background text-on-background font-body-lg overflow-hidden flex h-screen">
+<!-- SideNavBar (Shared Component) -->
+
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen relative">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex items-center justify-between px-8 w-full h-16 fixed top-0 right-0 z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant dark:border-outline-variant ml-64 max-w-[calc(100%-16rem)]">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-1.5 text-body-sm focus:ring-1 focus:ring-primary-fixed-dim transition-all" placeholder="Search accounts by holder or number..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<!-- Canvas Area -->
+<div class="flex-1 pt-20 px-8 pb-8 overflow-y-auto custom-scrollbar bg-background">
+<!-- Page Header & Key Metrics (Bento Style) -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<div class="col-span-12 lg:col-span-8">
+<h2 class="font-headline-lg text-headline-lg text-primary-fixed-dim mb-2" id="accountsPageTitle">Accounts Management</h2>
+<p class="text-on-surface-variant font-body-lg" id="accountsPageSubtitle">Manage customer accounts, balances, and account status.</p>
+</div>
+<div class="col-span-12 lg:col-span-4 flex items-center justify-end gap-3">
+<button class="px-5 py-2.5 bg-primary-fixed-dim text-on-primary-fixed font-bold rounded-lg neon-glow-primary hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">add</span> Create New Account
+                    </button>
+<button class="px-3 py-2.5 border border-outline-variant text-on-surface hover:bg-surface-container-high rounded-lg active:scale-95 transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Summary Widgets -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-caps text-on-surface-variant">TOTAL AUM</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-primary" id="accountAumValue">—</span>
+<span class="text-xs text-secondary-fixed">LIVE DB</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden mt-4">
+<div class="w-0 h-full bg-primary-fixed-dim transition-all" id="accountActiveBar"></div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-caps text-on-surface-variant">ACTIVE ACCOUNTS</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-primary" id="accountActiveCount">—</span>
+<span class="text-xs text-on-surface-variant" id="accountTotalCount">/ —</span>
+</div>
+<div class="flex -space-x-2 mt-4 overflow-hidden">
+<div class="w-6 h-6 rounded-full border-2 border-surface-container bg-primary-container"></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface-container bg-secondary-container"></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface-container bg-tertiary-container"></div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden">
+<span class="text-label-caps text-on-surface-variant">NON-ACTIVE ACCOUNTS</span>
+<span class="font-headline-md text-tertiary-fixed-dim" id="accountNonActiveCount">—</span>
+<p class="text-xs text-on-surface-variant mt-4">Action required for 12 accounts</p>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2 border-l-4 border-error">
+<span class="text-label-caps text-on-surface-variant">FROZEN ACCOUNTS</span>
+<span class="font-headline-md text-error" id="accountFrozenCount">—</span>
+<div class="flex items-center gap-1 text-xs text-on-surface-variant mt-4">
+<span class="material-symbols-outlined text-[14px]">info</span> Current database status
+                    </div>
+</div>
+</div>
+<!-- Main Data Table Container -->
+<div class="glass-panel rounded-xl overflow-hidden border border-outline-variant/30">
+<div class="px-6 py-4 flex items-center justify-between border-b border-outline-variant/50">
+<h3 class="font-headline-md text-on-surface" id="accountsTableTitle">Account Registry</h3>
+<div class="flex gap-2">
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-highest transition-colors">ALL</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-highest transition-colors">SAVINGS</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-label-caps text-on-surface-variant cursor-pointer hover:bg-surface-container-highest transition-colors">BUSINESS</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30">Account Number</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30">Holder Name</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30">Type</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30">Balance</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30">Created Date</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30 text-center">Status</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20"></tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container-low/50 border-t border-outline-variant/30 flex items-center justify-between">
+<p class="text-xs text-on-surface-variant"><span id="accountCountLabel">Loading account data…</span></p>
+<div class="flex gap-2">
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="px-3 py-1 text-xs font-bold bg-primary-fixed-dim text-on-primary-fixed rounded">1</button>
+<button class="px-3 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-container-high rounded transition-colors">2</button>
+<button class="px-3 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-container-high rounded transition-colors">3</button>
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Bottom Detail Section (Asymmetric / Bento) -->
+<div class="grid grid-cols-12 gap-6 mt-8">
+<div class="col-span-12 lg:col-span-7 glass-panel p-6 rounded-xl relative h-64 overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-headline-md text-on-surface mb-4">Liquidity Distribution</h4>
+<div class="flex items-end gap-4 h-32 mt-6">
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-primary-fixed-dim rounded-t h-[80%]"></div>
+<span class="text-[10px] text-on-surface-variant">NYC</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-secondary-fixed rounded-t h-[45%]"></div>
+<span class="text-[10px] text-on-surface-variant">LDN</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-primary-fixed-dim/60 rounded-t h-[60%]"></div>
+<span class="text-[10px] text-on-surface-variant">SGP</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-tertiary-fixed-dim rounded-t h-[30%]"></div>
+<span class="text-[10px] text-on-surface-variant">HKG</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-primary-fixed-dim rounded-t h-[95%]"></div>
+<span class="text-[10px] text-on-surface-variant">TKO</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-secondary-fixed/40 rounded-t h-[20%]"></div>
+<span class="text-[10px] text-on-surface-variant">FRA</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-5 glass-panel p-6 rounded-xl flex flex-col justify-between">
+<div>
+<h4 class="font-headline-md text-on-surface mb-2">Audit History</h4>
+<p class="text-xs text-on-surface-variant">Last synchronization: 2 minutes ago</p>
+</div>
+<div class="space-y-4 mt-4">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed"></div>
+<div class="flex-1">
+<p class="text-sm font-medium">Compliance Check Passed</p>
+<p class="text-[11px] text-on-surface-variant">Account NX-8291-0042 verified by AI-Sentry</p>
+</div>
+<span class="text-[10px] text-on-surface-variant">12:04 PM</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<div class="flex-1">
+<p class="text-sm font-medium">Flagged Transaction</p>
+<p class="text-[11px] text-on-surface-variant">Potential structure detected in NX-5521</p>
+</div>
+<span class="text-[10px] text-on-surface-variant">11:58 AM</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></div>
+<div class="flex-1">
+<p class="text-sm font-medium">Manual Review Requested</p>
+<p class="text-[11px] text-on-surface-variant">High-volume transfer on checking account</p>
+</div>
+<span class="text-[10px] text-on-surface-variant">11:42 AM</span>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline-variant rounded-lg text-xs font-bold hover:bg-surface-container-high transition-all">VIEW FULL AUDIT LOG</button>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Quick Actions -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary-fixed-dim text-on-primary-fixed rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[100] group">
+<span class="material-symbols-outlined text-[28px] group-hover:rotate-90 transition-transform">bolt</span>
+<div class="absolute bottom-full right-0 mb-4 flex flex-col items-end gap-2 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all translate-y-4 group-hover:translate-y-0">
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 bg-surface rounded text-xs whitespace-nowrap shadow-lg border border-outline-variant">Quick Transfer</span>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-lg border border-outline-variant hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">send</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 bg-surface rounded text-xs whitespace-nowrap shadow-lg border border-outline-variant">Batch Export</span>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-lg border border-outline-variant hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">download</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 bg-surface rounded text-xs whitespace-nowrap shadow-lg border border-outline-variant">Global Alert</span>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-lg border border-outline-variant hover:bg-error-container hover:text-on-error-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm">notification_important</span>
+</div>
+</div>
+</div>
+</button>
+<script>
+        // Micro-interactions for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (!e.target.closest('button')) {
+                    // Logic for selecting a row or opening details
+                    row.classList.toggle('bg-surface-container-high/50');
+                }
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-105');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-105');
+        });
+    </script>
+<script src="../shared/api.js"></script>
+<script src="../shared/accounts.js"></script>
+<script src="../shared/app-shell.js"></script>
+</body></html>
