@@ -113,7 +113,7 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
-<link href="../shared/app-shell.css" rel="stylesheet"/>
+<link href="../shared/app-shell.css" rel="stylesheet"/><link href="../shared/forms.css" rel="stylesheet"/>
 <link href="../shared/ui-polish.css" rel="stylesheet"/></head>
 <body class="bg-background text-on-background font-body-lg text-body-lg min-h-screen flex">
 <!-- SideNavBar (Shared Component) -->
@@ -199,9 +199,9 @@
 <div class="space-y-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant block ml-1">Transfer Type</label>
 <div class="flex bg-surface-container-low p-1 rounded-lg border border-outline-variant">
-<button class="flex-1 py-2 text-label-caps font-label-caps bg-secondary-container text-on-secondary-container rounded-md shadow-sm" type="button">IMPS</button>
-<button class="flex-1 py-2 text-label-caps font-label-caps text-on-surface-variant hover:text-primary transition-colors" type="button">NEFT</button>
-<button class="flex-1 py-2 text-label-caps font-label-caps text-on-surface-variant hover:text-primary transition-colors" type="button">RTGS</button>
+<button class="flex-1 py-2 text-label-caps font-label-caps bg-secondary-container text-on-secondary-container rounded-md shadow-sm" type="button" data-transfer-mode="IMPS" aria-pressed="true">IMPS</button>
+<button class="flex-1 py-2 text-label-caps font-label-caps text-on-surface-variant hover:text-primary transition-colors" type="button" data-transfer-mode="NEFT" aria-pressed="false">NEFT</button>
+<button class="flex-1 py-2 text-label-caps font-label-caps text-on-surface-variant hover:text-primary transition-colors" type="button" data-transfer-mode="RTGS" aria-pressed="false">RTGS</button>
 </div>
 </div>
 </div>
@@ -210,14 +210,14 @@
 <label class="font-label-caps text-label-caps text-on-surface-variant block ml-1">Transaction Amount</label>
 <div class="relative input-focus-glow rounded-lg transition-all">
 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold">₹</span>
-<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-4 pl-10 pr-4 text-headline-md font-mono-data text-primary focus:outline-none focus:border-primary-container focus:ring-0" placeholder="0.00" type="number"/>
+<input id="transferAmount" class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-4 pl-10 pr-4 text-headline-md font-mono-data text-primary focus:outline-none focus:border-primary-container focus:ring-0" placeholder="0.00" min="0.01" step="0.01" type="number" required/>
 <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
-<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button">25%</button>
-<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button">50%</button>
-<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button">MAX</button>
+<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button" data-amount-pct="25">25%</button>
+<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button" data-amount-pct="50">50%</button>
+<button class="text-[10px] px-2 py-1 bg-surface-variant rounded border border-outline-variant hover:border-primary-container transition-all" type="button" data-amount-pct="100">MAX</button>
 </div>
 </div>
-<p class="text-[11px] text-on-surface-variant ml-1">Available Balance: <span class="text-secondary">₹142,509.32</span></p>
+<p class="text-[11px] text-on-surface-variant ml-1">Available Balance: <span class="text-secondary" id="availableBalanceValue">Loading…</span></p>
 </div>
 <!-- Remarks -->
 <div class="space-y-2">
@@ -228,12 +228,12 @@
 </div>
 <!-- Action -->
 <div class="pt-4 flex items-center gap-4">
-<button class="flex-1 bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-lg flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(0,245,255,0.2)]" type="button">
+<button id="authorizeTransferButton" class="flex-1 bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-lg flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(0,245,255,0.2)]" type="button">
 <span class="material-symbols-outlined">verified_user</span>
                                 Authorize Transfer
                             </button>
-<button class="p-4 border border-outline-variant rounded-lg hover:bg-surface-variant transition-colors group" type="button">
-<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">schedule_send</span>
+<button id="clearTransferFormButton" title="Clear transfer form" aria-label="Clear transfer form" class="p-4 border border-outline-variant rounded-lg hover:bg-surface-variant transition-colors group" type="button">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">backspace</span>
 </button>
 </div>
 </form>
@@ -305,8 +305,8 @@
 <h3 class="font-headline-md text-headline-md text-primary">Recent Transfers</h3>
 </div>
 <div class="flex gap-2">
-<button class="px-3 py-1.5 bg-surface-variant border border-outline-variant rounded-md text-label-caps font-label-caps hover:text-primary transition-colors">Export CSV</button>
-<button class="px-3 py-1.5 bg-surface-variant border border-outline-variant rounded-md text-label-caps font-label-caps hover:text-primary transition-colors">Filter</button>
+<button id="exportTransactionsCsvButton" class="px-3 py-1.5 bg-surface-variant border border-outline-variant rounded-md text-label-caps font-label-caps hover:text-primary transition-colors">Export CSV</button>
+<button id="filterTransactionsButton" class="px-3 py-1.5 bg-surface-variant border border-outline-variant rounded-md text-label-caps font-label-caps hover:text-primary transition-colors">Filter</button>
 </div>
 </div>
 <div class="overflow-x-auto">
@@ -326,7 +326,7 @@
 </table>
 </div>
 <div class="p-4 bg-surface-container-low flex justify-between items-center border-t border-outline-variant">
-<p class="text-[11px] text-on-surface-variant">Showing 3 of 128 transactions</p>
+<p class="text-[11px] text-on-surface-variant" id="transactionHistoryCount">Loading transactions…</p>
 <div class="flex items-center gap-2">
 <button class="p-1.5 rounded bg-surface-variant text-on-surface hover:text-primary disabled:opacity-50" disabled=""><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
 <span class="text-[11px] font-bold px-2">1</span>
@@ -353,6 +353,7 @@
 </main>
 <script></script>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script src="../shared/transactions.js"></script>
 <script src="../shared/beneficiaries.js?v=2"></script>
 <script src="../shared/app-shell.js"></script>

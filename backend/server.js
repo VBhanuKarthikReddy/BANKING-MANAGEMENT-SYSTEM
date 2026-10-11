@@ -314,7 +314,7 @@ app.use("/api/loans", (req, res, next) => {
     next();
 });
 app.use("/api/cards", (req, res, next) => {
-    if (req.method === "PATCH" && !isStaffRole(req.role)) return res.status(403).json({ success:false, message:"Staff access required to change card status" });
+    if (["POST", "PATCH"].includes(req.method) && !isStaffRole(req.role)) return res.status(403).json({ success:false, message:"Staff access required to manage cards" });
     next();
 });
 app.use("/api/fixed-deposits", (req, res, next) => {
@@ -355,6 +355,23 @@ app.get("/api/fd-lookups", asyncRoute(async (req, res) => {
 }));
 
 // ---------- Customer Dashboard ----------
+// Safe lookup data for the loan application form. This is available to
+// authenticated customers and staff, but it exposes only branch names/IDs and
+// active loan rates—not the branch/employee management datasets.
+app.get("/api/loan-form-options", asyncRoute(async (req, res) => {
+    const [branches, rates] = await Promise.all([
+        pool.query(`SELECT BranchID, BranchName FROM BRANCH ORDER BY BranchID`),
+        pool.query(`
+            SELECT RateID, RateType, ProductType, Rate
+            FROM INTEREST_RATE
+            WHERE LOWER(TRIM(RateType)) = 'loan'
+              AND (EffectiveTo IS NULL OR EffectiveTo >= CURRENT_DATE)
+            ORDER BY RateID
+        `)
+    ]);
+    res.json({ success: true, branches: branches.rows, rates: rates.rows });
+}));
+
 app.get("/api/customer-dashboard", requireSession, asyncRoute(async (req, res) => {
     if (req.role !== "Customer") {
         return res.status(403).json({ success: false, message: "Customer access required" });
@@ -796,94 +813,184 @@ app.post("/api/accounts", asyncRoute(async(req,res)=>{
     }finally{client.release();}
 }));
 
-app.post("/api/accounts/:accountNo/deposit", asyncRoute(async(req,res)=>{
-    const {amount,mode,customerId}=req.body;
+app.post("/api/accounts/:accountNo/deposit", asyncRoute(async (req, res) => {
+    const accountNo = Number(req.params.accountNo);
+    const amount = Number(req.body.amount);
+    const mode = String(req.body.mode || "Online").trim();
+    const sessionCustomerId = req.role === "Customer"
+        ? Number(req.user?.customerid ?? req.user?.CustomerID)
+        : null;
 
-    if(customerId){
-        const ownership=await pool.query(`
-            SELECT 1
-            FROM ACCOUNT_HOLDER
-            WHERE AccountNo=$1 AND CustomerID=$2
-            LIMIT 1
-        `,[req.params.accountNo,customerId]);
+    if (!Number.isInteger(accountNo) || accountNo <= 0) return badRequest(res, "Invalid account selected.");
+    if (!Number.isFinite(amount) || amount <= 0) return badRequest(res, "Deposit amount must be greater than zero.");
+    if (req.role !== "Customer" && !isStaffRole(req.role)) return res.status(403).json({ success: false, message: "Access denied." });
 
-        if(!ownership.rowCount){
-            return res.status(403).json({
-                success:false,
-                message:"You can only deposit into an account you hold."
-            });
-        }
+    if (req.role === "Customer") {
+        if (!Number.isInteger(sessionCustomerId) || sessionCustomerId <= 0) return res.status(403).json({ success: false, message: "Customer session is missing. Please sign in again." });
+        const ownership = await pool.query(
+            `SELECT 1 FROM ACCOUNT_HOLDER WHERE AccountNo=$1 AND CustomerID=$2 LIMIT 1`,
+            [accountNo, sessionCustomerId]
+        );
+        if (!ownership.rowCount) return res.status(403).json({ success: false, message: "You can only deposit into an account you hold." });
     }
 
-    await pool.query(`CALL sp_deposit($1,$2,$3)`,[req.params.accountNo,amount,mode||"Online"]);
-    const result=await pool.query(`SELECT AccountNo,Balance,Status FROM ACCOUNT WHERE AccountNo=$1`,[req.params.accountNo]);
-
-    res.json({
-        success:true,
-        message:"Deposit successful",
-        account:result.rows[0]
-    });
+    await pool.query(`CALL sp_deposit($1,$2,$3)`, [accountNo, amount, mode]);
+    const result = await pool.query(`SELECT AccountNo, Balance, Status FROM ACCOUNT WHERE AccountNo=$1`, [accountNo]);
+    if (!result.rowCount) return res.status(404).json({ success: false, message: "Account not found." });
+    res.json({ success: true, message: "Deposit successful", account: result.rows[0] });
 }));
 
-app.post("/api/accounts/:accountNo/withdraw", asyncRoute(async(req,res)=>{
-    const {amount,mode,customerId}=req.body;
+app.post("/api/accounts/:accountNo/withdraw", asyncRoute(async (req, res) => {
+    const accountNo = Number(req.params.accountNo);
+    const amount = Number(req.body.amount);
+    const mode = String(req.body.mode || "Online").trim();
+    const sessionCustomerId = req.role === "Customer"
+        ? Number(req.user?.customerid ?? req.user?.CustomerID)
+        : null;
 
-    if(customerId){
-        const ownership=await pool.query(`
-            SELECT 1
-            FROM ACCOUNT_HOLDER
-            WHERE AccountNo=$1 AND CustomerID=$2
-            LIMIT 1
-        `,[req.params.accountNo,customerId]);
+    if (!Number.isInteger(accountNo) || accountNo <= 0) return badRequest(res, "Invalid account selected.");
+    if (!Number.isFinite(amount) || amount <= 0) return badRequest(res, "Withdrawal amount must be greater than zero.");
+    if (req.role !== "Customer" && !isStaffRole(req.role)) return res.status(403).json({ success: false, message: "Access denied." });
 
-        if(!ownership.rowCount){
-            return res.status(403).json({
-                success:false,
-                message:"You can only withdraw from an account you hold."
-            });
-        }
+    // For customers, scope by the identity inside the signed session. Do not rely
+    // on a customerId sent by the browser, and do not ask the customer to re-enter
+    // an account number—the row-specific URL selects the account.
+    if (req.role === "Customer") {
+        if (!Number.isInteger(sessionCustomerId) || sessionCustomerId <= 0) return res.status(403).json({ success: false, message: "Customer session is missing. Please sign in again." });
+        const ownership = await pool.query(
+            `SELECT 1 FROM ACCOUNT_HOLDER WHERE AccountNo=$1 AND CustomerID=$2 LIMIT 1`,
+            [accountNo, sessionCustomerId]
+        );
+        if (!ownership.rowCount) return res.status(403).json({ success: false, message: "You can only withdraw from an account you hold." });
     }
 
-    await pool.query(`CALL sp_withdraw($1,$2,$3)`,[req.params.accountNo,amount,mode||"Online"]);
-    const result=await pool.query(`SELECT AccountNo,Balance,Status FROM ACCOUNT WHERE AccountNo=$1`,[req.params.accountNo]);
-    res.json({success:true,message:"Withdrawal successful",account:result.rows[0]});
+    await pool.query(`CALL sp_withdraw($1,$2,$3)`, [accountNo, amount, mode]);
+    const result = await pool.query(`SELECT AccountNo, Balance, Status FROM ACCOUNT WHERE AccountNo=$1`, [accountNo]);
+    if (!result.rowCount) return res.status(404).json({ success: false, message: "Account not found." });
+    res.json({ success: true, message: "Withdrawal successful", account: result.rows[0] });
 }));
 
-app.post("/api/transfers", asyncRoute(async(req,res)=>{
-    const {fromAccount,toAccount,amount,mode,customerId}=req.body;
+app.post("/api/transfers", asyncRoute(async (req, res) => {
+    const fromAccount = Number(req.body.fromAccount);
+    const toAccount = Number(req.body.toAccount);
+    const amount = Number(req.body.amount);
+    const mode = String(req.body.mode || "Online").trim().toUpperCase();
+    const sessionCustomerId = req.role === "Customer"
+        ? Number(req.user?.customerid ?? req.user?.CustomerID)
+        : null;
+    const customerId = sessionCustomerId || (req.body.customerId ? Number(req.body.customerId) : null);
+    const allowedModes = ["IMPS", "NEFT", "RTGS", "ONLINE", "UPI", "CASH"];
 
-    // When a customer is making the transfer, verify both the source
-    // account ownership and the selected beneficiary before calling
-    // the PostgreSQL transfer procedure.
-    if(customerId){
-        const source=await pool.query(`
-            SELECT 1
-            FROM ACCOUNT_HOLDER
-            WHERE AccountNo=$1 AND CustomerID=$2
-            LIMIT 1
-        `,[fromAccount,customerId]);
-
-        if(!source.rowCount){
-            return res.status(403).json({success:false,message:"You can only transfer from an account you hold."});
-        }
-
-        const beneficiary=await pool.query(`
-            SELECT 1
-            FROM BENEFICIARY
-            WHERE CustomerID=$1
-              AND BeneficiaryAccountNo=$2
-              AND Status='Active'
-            LIMIT 1
-        `,[customerId,toAccount]);
-
-        if(!beneficiary.rowCount){
-            return res.status(403).json({success:false,message:"The selected beneficiary does not belong to this customer."});
-        }
+    if (!Number.isInteger(fromAccount) || fromAccount <= 0 || !Number.isInteger(toAccount) || toAccount <= 0) {
+        return badRequest(res, "Choose a valid source account and beneficiary account.");
     }
+    if (!Number.isFinite(amount) || amount <= 0) return badRequest(res, "Transfer amount must be greater than zero.");
+    if (!allowedModes.includes(mode)) return badRequest(res, "Choose a supported transfer mode.");
+    if (req.role === "Customer" && (!Number.isInteger(sessionCustomerId) || sessionCustomerId <= 0)) {
+        return res.status(403).json({ success: false, message: "Customer session is missing. Please sign in again." });
+    }
+    if (fromAccount === toAccount) return badRequest(res, "Source and destination accounts must be different.");
 
-    await pool.query(`CALL sp_transfer_funds($1,$2,$3,$4)`,[fromAccount,toAccount,amount,mode||"Online"]);
-    const result=await pool.query(`SELECT AccountNo,Balance,Status FROM ACCOUNT WHERE AccountNo IN ($1,$2) ORDER BY AccountNo`,[fromAccount,toAccount]);
-    res.json({success:true,message:"Transfer successful",accounts:result.rows});
+    const client = await pool.connect();
+    let transactionStarted = false;
+    try {
+        await client.query("BEGIN");
+        transactionStarted = true;
+
+        const sourceResult = await client.query(
+            `SELECT AccountNo, Status, Balance FROM ACCOUNT WHERE AccountNo=$1 FOR UPDATE`,
+            [fromAccount]
+        );
+        if (!sourceResult.rowCount) throw Object.assign(new Error("The selected source account was not found."), { statusCode: 404 });
+        if (sourceResult.rows[0].status !== "Active") throw Object.assign(new Error("The source account is not active."), { statusCode: 400 });
+
+        let beneficiary = null;
+        if (req.role === "Customer") {
+            const ownership = await client.query(
+                `SELECT 1 FROM ACCOUNT_HOLDER WHERE AccountNo=$1 AND CustomerID=$2 LIMIT 1`,
+                [fromAccount, sessionCustomerId]
+            );
+            if (!ownership.rowCount) throw Object.assign(new Error("You can only transfer from an account you hold."), { statusCode: 403 });
+
+            const beneficiaryResult = await client.query(
+                `SELECT BeneficiaryID, BeneficiaryAccountNo, Name, Status
+                 FROM BENEFICIARY
+                 WHERE CustomerID=$1 AND BeneficiaryAccountNo=$2 AND Status='Active'
+                 LIMIT 1 FOR SHARE`,
+                [sessionCustomerId, toAccount]
+            );
+            if (!beneficiaryResult.rowCount) {
+                throw Object.assign(new Error("Choose one of your active beneficiaries before transferring."), { statusCode: 403 });
+            }
+            beneficiary = beneficiaryResult.rows[0];
+        } else if (customerId) {
+            const beneficiaryResult = await client.query(
+                `SELECT BeneficiaryID, BeneficiaryAccountNo, Name, Status
+                 FROM BENEFICIARY
+                 WHERE CustomerID=$1 AND BeneficiaryAccountNo=$2 AND Status='Active'
+                 LIMIT 1 FOR SHARE`,
+                [customerId, toAccount]
+            );
+            if (beneficiaryResult.rowCount) beneficiary = beneficiaryResult.rows[0];
+        }
+
+        // The destination may be an internal account (update both bank accounts),
+        // or an external beneficiary account (debit the source and write a PAYMENT
+        // instruction). Never pass an unknown destination to sp_transfer_funds:
+        // TRANSACTION.AccountNo has a foreign key to ACCOUNT.AccountNo.
+        const destinationResult = await client.query(
+            `SELECT AccountNo, Status FROM ACCOUNT WHERE AccountNo=$1`,
+            [toAccount]
+        );
+        let externalDestination = !destinationResult.rowCount;
+
+        if (!externalDestination) {
+            if (destinationResult.rows[0].status !== "Active") {
+                throw Object.assign(new Error("The destination account is not active."), { statusCode: 400 });
+            }
+            await client.query(`CALL sp_transfer_funds($1,$2,$3,$4)`, [fromAccount, toAccount, amount, mode]);
+        } else {
+            if (!customerId || !beneficiary) {
+                throw Object.assign(new Error("That destination is not an internal account or a registered beneficiary."), { statusCode: 400 });
+            }
+            // External beneficiary account numbers do not exist in ACCOUNT, so the
+            // transfer procedure cannot create a destination TRANSACTION row for them.
+            // Debit the source and create a PAYMENT row tied to the registered beneficiary.
+            await client.query(`CALL sp_withdraw($1,$2,$3)`, [fromAccount, amount, mode]);
+        }
+
+        if (customerId && beneficiary) {
+            // Serialize MAX(ID)+1 allocation for the existing PAYMENT schema, which
+            // does not expose an identity default in this project database.
+            await client.query("SELECT pg_advisory_xact_lock($1)", [727304]);
+            await client.query(`
+                INSERT INTO PAYMENT(PaymentID, CustomerID, BeneficiaryID, Type, Amount, DateTime, Status)
+                VALUES ((SELECT COALESCE(MAX(PaymentID),400000)+1 FROM PAYMENT), $1, $2, 'Fund Transfer', $3, CURRENT_TIMESTAMP, 'Success')
+            `, [customerId, beneficiary.beneficiaryid, amount]);
+        }
+
+        const accountResult = externalDestination
+            ? await client.query(`SELECT AccountNo, Balance, Status FROM ACCOUNT WHERE AccountNo=$1`, [fromAccount])
+            : await client.query(`SELECT AccountNo, Balance, Status FROM ACCOUNT WHERE AccountNo IN ($1,$2) ORDER BY AccountNo`, [fromAccount, toAccount]);
+
+        await client.query("COMMIT");
+        transactionStarted = false;
+        res.status(201).json({
+            success: true,
+            external: externalDestination,
+            message: externalDestination
+                ? "External transfer recorded. The source account was debited and the beneficiary payment is in your Payments history."
+                : "Transfer completed successfully.",
+            accounts: accountResult.rows
+        });
+    } catch (error) {
+        if (transactionStarted) {
+            try { await client.query("ROLLBACK"); } catch (_) { }
+        }
+        res.status(error.statusCode || 400).json({ success: false, message: error.message || "Transfer could not be completed." });
+    } finally {
+        client.release();
+    }
 }));
 
 app.patch("/api/accounts/:accountNo/freeze", asyncRoute(async(req,res)=>{
@@ -1137,44 +1244,92 @@ app.post("/api/loan-payments/generate", asyncRoute(async(req,res)=>{
     res.status(201).json({success:true,message:"Next loan payment generated",data:payment.rows[0]});
 }));
 
-app.patch("/api/loan-payments/:id/pay", asyncRoute(async(req,res)=>{
-    const {customerId}=req.body || {};
-    const params=[req.params.id];
-    const ownership=customerId ? " AND l.CustomerID=$2" : "";
-    if(customerId) params.push(customerId);
+app.patch("/api/loan-payments/:id/pay", asyncRoute(async (req, res) => {
+    const accountNo = Number(req.body.accountNo);
+    const mode = String(req.body.mode || "Online").trim();
+    const sessionCustomerId = req.role === "Customer"
+        ? Number(req.user?.customerid ?? req.user?.CustomerID)
+        : null;
+    const requestedCustomerId = sessionCustomerId || (req.body.customerId ? Number(req.body.customerId) : null);
 
-    const payment = await pool.query(`
-        SELECT lp.LoanPaymentID, lp.DueDate, lp.Status, l.CustomerID
-        FROM LOAN_PAYMENT lp
-        JOIN LOAN l ON l.LoanID=lp.LoanID
-        WHERE lp.LoanPaymentID=$1 ${ownership}
-    `,params);
-
-    if(!payment.rowCount) {
-        return res.status(404).json({success:false,message:"Loan payment not found or not accessible"});
+    if (!Number.isInteger(accountNo) || accountNo <= 0) return badRequest(res, "Select the account to pay the installment from.");
+    if (req.role === "Customer" && (!Number.isInteger(sessionCustomerId) || sessionCustomerId <= 0)) {
+        return res.status(403).json({ success: false, message: "Customer session is missing. Please sign in again." });
+    }
+    if (req.role !== "Customer" && !isStaffRole(req.role)) {
+        return res.status(403).json({ success: false, message: "Access denied." });
     }
 
-    const row = payment.rows[0];
-    if(row.status === 'Paid') {
-        return res.status(400).json({success:false,message:"This loan payment is already marked as paid."});
+    const client = await pool.connect();
+    let transactionStarted = false;
+    try {
+        await client.query("BEGIN");
+        transactionStarted = true;
+
+        const paymentParams = [req.params.id];
+        const customerScope = req.role === "Customer" ? " AND l.CustomerID=$2" : (requestedCustomerId ? " AND l.CustomerID=$2" : "");
+        if (customerScope) paymentParams.push(req.role === "Customer" ? sessionCustomerId : requestedCustomerId);
+
+        const paymentResult = await client.query(`
+            SELECT lp.LoanPaymentID, lp.LoanID, lp.Amount, lp.DueDate, lp.PaidDate, lp.Status,
+                   l.CustomerID, (lp.DueDate <= CURRENT_DATE) AS IsDue
+            FROM LOAN_PAYMENT lp
+            JOIN LOAN l ON l.LoanID=lp.LoanID
+            WHERE lp.LoanPaymentID=$1 ${customerScope}
+            FOR UPDATE OF lp
+        `, paymentParams);
+        if (!paymentResult.rowCount) throw Object.assign(new Error("Loan payment not found or not accessible."), { statusCode: 404 });
+
+        const payment = paymentResult.rows[0];
+        if (String(payment.status).toLowerCase() === "paid") {
+            throw Object.assign(new Error("This installment has already been paid."), { statusCode: 400 });
+        }
+        if (!payment.isdue) {
+            throw Object.assign(new Error(`This installment is not due yet. Due date: ${String(payment.duedate).slice(0, 10)}.`), { statusCode: 400 });
+        }
+
+        const payingCustomerId = req.role === "Customer" ? sessionCustomerId : Number(payment.customerid);
+        const accountResult = await client.query(`
+            SELECT a.AccountNo, a.Balance, a.Status
+            FROM ACCOUNT a
+            JOIN ACCOUNT_HOLDER ah ON ah.AccountNo=a.AccountNo
+            WHERE a.AccountNo=$1 AND ah.CustomerID=$2
+            FOR UPDATE OF a
+        `, [accountNo, payingCustomerId]);
+        if (!accountResult.rowCount) throw Object.assign(new Error("The selected account does not belong to this customer."), { statusCode: 403 });
+        if (accountResult.rows[0].status !== "Active") throw Object.assign(new Error("The selected account is not active."), { statusCode: 400 });
+        if (Number(accountResult.rows[0].balance) < Number(payment.amount)) {
+            throw Object.assign(new Error("Insufficient balance to pay this installment."), { statusCode: 400 });
+        }
+
+        // Actual repayment: debit the selected account via the same PostgreSQL
+        // procedure as withdrawals, then mark the installment paid atomically.
+        await client.query(`CALL sp_withdraw($1,$2,$3)`, [accountNo, Number(payment.amount), mode]);
+        const paidResult = await client.query(`
+            UPDATE LOAN_PAYMENT
+            SET Status='Paid', PaidDate=CURRENT_DATE
+            WHERE LoanPaymentID=$1 AND Status <> 'Paid' AND DueDate <= CURRENT_DATE
+            RETURNING *
+        `, [req.params.id]);
+        if (!paidResult.rowCount) throw Object.assign(new Error("The installment could not be marked paid. Refresh and try again."), { statusCode: 409 });
+
+        const newBalance = await client.query(`SELECT AccountNo, Balance FROM ACCOUNT WHERE AccountNo=$1`, [accountNo]);
+        await client.query("COMMIT");
+        transactionStarted = false;
+        res.json({
+            success: true,
+            message: "Loan installment paid successfully; your account has been debited.",
+            data: paidResult.rows[0],
+            account: newBalance.rows[0]
+        });
+    } catch (error) {
+        if (transactionStarted) {
+            try { await client.query("ROLLBACK"); } catch (_) { }
+        }
+        res.status(error.statusCode || 400).json({ success: false, message: error.message || "Loan payment could not be completed." });
+    } finally {
+        client.release();
     }
-
-    const result=await pool.query(`
-        UPDATE LOAN_PAYMENT lp
-        SET Status='Paid', PaidDate=CURRENT_DATE
-        FROM LOAN l
-        WHERE lp.LoanPaymentID=$1 AND lp.LoanID=l.LoanID ${ownership}
-          AND CURRENT_DATE >= lp.DueDate
-        RETURNING lp.*
-    `,params);
-
-    if(!result.rowCount) {
-        const due = await pool.query(`SELECT DueDate FROM LOAN_PAYMENT WHERE LoanPaymentID=$1`,[req.params.id]);
-        const dueDate = due.rowCount ? due.rows[0].duedate : null;
-        return res.status(400).json({success:false,message:`Payment is not due yet. Due date: ${dueDate}.`});
-    }
-
-    res.json({success:true,message:"Loan payment marked as paid",data:result.rows[0]});
 }));
 
 app.get("/api/interest-rates", asyncRoute(async(req,res)=>{
@@ -1564,67 +1719,197 @@ app.get("/api/payments", asyncRoute(async(req,res)=>{
     res.json({success:true,data:result.rows});
 }));
 
-app.post("/api/payments", asyncRoute(async(req,res)=>{
-    const client=await pool.connect();
-    try{
-        const {customerId,accountNo,beneficiaryId,type,amount}=req.body;
-        const allowedTypes=["Fund Transfer","Bill Payment","Utility Payment","Merchant Payment"];
-        if(!customerId || !accountNo || !type || !amount) return badRequest(res,"Customer, source account, payment type and amount are required");
-        if(!allowedTypes.includes(type)) return badRequest(res,`Invalid payment type. Use: ${allowedTypes.join(", ")}`);
+app.post("/api/payments", asyncRoute(async (req, res) => {
+    const client = await pool.connect();
+    let inTransaction = false;
+    try {
+        const requestedCustomerId = Number(req.body.customerId || 0);
+        const customerId = req.role === "Customer"
+            ? Number(req.user?.customerid ?? req.user?.CustomerID)
+            : requestedCustomerId;
+        const accountNo = Number(req.body.accountNo);
+        const beneficiaryId = req.body.beneficiaryId ? Number(req.body.beneficiaryId) : null;
+        const type = String(req.body.type || "").trim();
+        const amount = Number(req.body.amount);
+        const allowedTypes = ["Fund Transfer", "Bill Payment", "Utility Payment", "Merchant Payment"];
 
-        const numericAmount=Number(amount);
-        if(!Number.isFinite(numericAmount) || numericAmount<=0) return badRequest(res,"Amount must be greater than zero");
-
-        await client.query("BEGIN");
-
-        const owner=await client.query(`
-            SELECT a.AccountNo,a.Status
-            FROM ACCOUNT a
-            JOIN ACCOUNT_HOLDER ah ON ah.AccountNo=a.AccountNo
-            WHERE a.AccountNo=$1 AND ah.CustomerID=$2 AND ah.HolderType='Primary'
-            LIMIT 1
-        `,[accountNo,customerId]);
-        if(!owner.rowCount){ await client.query("ROLLBACK"); return res.status(403).json({success:false,message:"Source account does not belong to this customer"}); }
-        if(owner.rows[0].status !== "Active"){ await client.query("ROLLBACK"); return badRequest(res,"Source account is not active"); }
-
-        let beneficiary=null;
-        let destinationAccount=null;
-        if(type === "Fund Transfer"){
-            if(!beneficiaryId){ await client.query("ROLLBACK"); return badRequest(res,"Beneficiary is required for a fund transfer"); }
-            const b=await client.query(`
-                SELECT BeneficiaryID,BeneficiaryAccountNo,Status,IFSC,Name
-                FROM BENEFICIARY
-                WHERE BeneficiaryID=$1 AND CustomerID=$2
-            `,[beneficiaryId,customerId]);
-            if(!b.rowCount){ await client.query("ROLLBACK"); return res.status(404).json({success:false,message:"Beneficiary not found for this customer"}); }
-            beneficiary=b.rows[0];
-            if(beneficiary.status !== "Active"){ await client.query("ROLLBACK"); return badRequest(res,"Beneficiary is not active"); }
-            destinationAccount=beneficiary.beneficiaryaccountno;
-
-            const dest=await client.query(`SELECT AccountNo,Status FROM ACCOUNT WHERE AccountNo=$1`,[destinationAccount]);
-            if(!dest.rowCount){ await client.query("ROLLBACK"); return badRequest(res,"Beneficiary account is not an internal banking account in this demo database"); }
-            if(Number(destinationAccount)===Number(accountNo)){ await client.query("ROLLBACK"); return badRequest(res,"Source and beneficiary accounts must be different"); }
-
-            await client.query(`CALL sp_transfer_funds($1,$2,$3,$4)`,[accountNo,destinationAccount,numericAmount,"Online"]);
-        } else {
-            await client.query(`CALL sp_withdraw($1,$2,$3)`,[accountNo,numericAmount,"Online"]);
+        if (!Number.isInteger(customerId) || customerId <= 0 || !Number.isInteger(accountNo) || accountNo <= 0 || !type || !Number.isFinite(amount)) {
+            return badRequest(res, "Customer, source account, payment type and amount are required.");
+        }
+        if (!allowedTypes.includes(type)) return badRequest(res, `Invalid payment type. Use: ${allowedTypes.join(", ")}`);
+        if (amount <= 0) return badRequest(res, "Payment amount must be greater than zero.");
+        if (req.role === "Customer" && customerId !== Number(req.user?.customerid ?? req.user?.CustomerID)) {
+            return res.status(403).json({ success: false, message: "You can only pay from your own customer profile." });
         }
 
-        const payment=await client.query(`
-            INSERT INTO PAYMENT(PaymentID,CustomerID,BeneficiaryID,Type,Amount,DateTime,Status)
-            VALUES((SELECT COALESCE(MAX(PaymentID),400000)+1 FROM PAYMENT),$1,$2,$3,$4,CURRENT_TIMESTAMP,'Success')
-            RETURNING PaymentID,CustomerID,BeneficiaryID,Type,Amount,DateTime,Status
-        `,[customerId,beneficiaryId || null,type,numericAmount]);
+        await client.query("BEGIN");
+        inTransaction = true;
+
+        const owner = await client.query(`
+            SELECT a.AccountNo, a.Status, a.Balance
+            FROM ACCOUNT a
+            JOIN ACCOUNT_HOLDER ah ON ah.AccountNo=a.AccountNo
+            WHERE a.AccountNo=$1 AND ah.CustomerID=$2
+            LIMIT 1 FOR UPDATE OF a
+        `, [accountNo, customerId]);
+        if (!owner.rowCount) throw Object.assign(new Error("Source account does not belong to this customer."), { statusCode: 403 });
+        if (owner.rows[0].status !== "Active") throw Object.assign(new Error("Source account is not active."), { statusCode: 400 });
+        if (Number(owner.rows[0].balance) < amount) throw Object.assign(new Error("Insufficient balance for this payment."), { statusCode: 400 });
+
+        let resolvedBeneficiaryId = null;
+        let destinationAccount = null;
+        let internalTransfer = false;
+
+        if (type === "Fund Transfer") {
+            if (!Number.isInteger(beneficiaryId) || beneficiaryId <= 0) throw Object.assign(new Error("Choose an active beneficiary for a fund transfer."), { statusCode: 400 });
+            const beneficiaryResult = await client.query(`
+                SELECT BeneficiaryID, CustomerID, BeneficiaryAccountNo, Name, Status
+                FROM BENEFICIARY
+                WHERE BeneficiaryID=$1 AND CustomerID=$2
+                FOR SHARE
+            `, [beneficiaryId, customerId]);
+            if (!beneficiaryResult.rowCount) throw Object.assign(new Error("Beneficiary not found for this customer."), { statusCode: 404 });
+            const beneficiary = beneficiaryResult.rows[0];
+            if (beneficiary.status !== "Active") throw Object.assign(new Error("Beneficiary is not active."), { statusCode: 400 });
+            destinationAccount = Number(beneficiary.beneficiaryaccountno);
+            resolvedBeneficiaryId = Number(beneficiary.beneficiaryid);
+            if (!Number.isInteger(destinationAccount) || destinationAccount <= 0) throw Object.assign(new Error("Beneficiary account number is invalid."), { statusCode: 400 });
+            if (destinationAccount === accountNo) throw Object.assign(new Error("Source and beneficiary accounts must be different."), { statusCode: 400 });
+
+            const destination = await client.query(`SELECT AccountNo, Status FROM ACCOUNT WHERE AccountNo=$1`, [destinationAccount]);
+            if (destination.rowCount) {
+                if (destination.rows[0].status !== "Active") throw Object.assign(new Error("Destination account is not active."), { statusCode: 400 });
+                // Internal account: the stored procedure updates both bank accounts
+                // and can create both transaction rows because the FK targets ACCOUNT.
+                await client.query(`CALL sp_transfer_funds($1,$2,$3,$4)`, [accountNo, destinationAccount, amount, "Online"]);
+                internalTransfer = true;
+            } else {
+                // External beneficiary: destination isn't an ACCOUNT row. Do not pass
+                // it to sp_transfer_funds, which would violate fk_transaction_account.
+                // Debit the bank's source account and record the external instruction
+                // in PAYMENT for history/reconciliation.
+                await client.query(`CALL sp_withdraw($1,$2,$3)`, [accountNo, amount, "Online"]);
+            }
+        } else {
+            await client.query(`CALL sp_withdraw($1,$2,$3)`, [accountNo, amount, "Online"]);
+        }
+
+        // PAYMENT IDs in this schema are managed manually; serialize allocation.
+        await client.query("SELECT pg_advisory_xact_lock($1)", [727304]);
+        const paymentResult = await client.query(`
+            INSERT INTO PAYMENT (PaymentID, CustomerID, BeneficiaryID, Type, Amount, DateTime, Status)
+            VALUES ((SELECT COALESCE(MAX(PaymentID),400000)+1 FROM PAYMENT), $1, $2, $3, $4, CURRENT_TIMESTAMP, 'Success')
+            RETURNING PaymentID, CustomerID, BeneficiaryID, Type, Amount, DateTime, Status
+        `, [customerId, resolvedBeneficiaryId, type, amount]);
 
         await client.query("COMMIT");
-        res.status(201).json({success:true,message:"Payment completed successfully",data:payment.rows[0]});
-    }catch(error){
-        try{ await client.query("ROLLBACK"); }catch(_){ }
-        res.status(400).json({success:false,message:error.message});
-    }finally{ client.release(); }
+        inTransaction = false;
+        res.status(201).json({
+            success: true,
+            message: type === "Fund Transfer" && !internalTransfer
+                ? "External transfer submitted. Your source account was debited and the payment is recorded in Payment History. The external destination balance is not managed by this bank database."
+                : "Payment completed successfully.",
+            data: paymentResult.rows[0],
+            internalTransfer
+        });
+    } catch (error) {
+        if (inTransaction) {
+            try { await client.query("ROLLBACK"); } catch (_) { }
+        }
+        res.status(error.statusCode || 400).json({ success: false, message: error.message || "Payment could not be completed." });
+    } finally {
+        client.release();
+    }
 }));
 
+
 // ---------- Cards ----------
+app.post("/api/cards", asyncRoute(async (req, res) => {
+    const cardType = String(req.body.cardType || "").trim().toUpperCase();
+    const expiryDate = req.body.expiryDate || null;
+
+    if (!["DEBIT", "CREDIT"].includes(cardType)) {
+        return badRequest(res, "Choose Debit card or Credit card");
+    }
+    if (!expiryDate || !/^\d{4}-\d{2}-\d{2}$/.test(String(expiryDate))) {
+        return badRequest(res, "A valid card expiry date is required");
+    }
+    if (new Date(`${expiryDate}T00:00:00`) <= new Date(new Date().toDateString())) {
+        return badRequest(res, "Expiry date must be in the future");
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        // Serialize ID allocation in this small demo database so concurrent
+        // issue requests cannot accidentally select the same MAX(ID)+1.
+        await client.query("SELECT pg_advisory_xact_lock($1)", [cardType === "DEBIT" ? 727301 : 727302]);
+
+        let issued;
+        if (cardType === "DEBIT") {
+            const accountNo = Number(req.body.accountNo);
+            if (!Number.isInteger(accountNo) || accountNo <= 0) {
+                await client.query("ROLLBACK");
+                return badRequest(res, "Select an active account for the debit card");
+            }
+            const account = await client.query(
+                `SELECT AccountNo FROM ACCOUNT WHERE AccountNo=$1 AND Status='Active'`,
+                [accountNo]
+            );
+            if (!account.rowCount) {
+                await client.query("ROLLBACK");
+                return res.status(400).json({ success: false, message: "The selected account does not exist or is not active" });
+            }
+
+            const idResult = await client.query(`SELECT COALESCE(MAX(DebitCardID), 9000) + 1 AS next_id FROM DEBIT_CARD`);
+            const cardId = Number(idResult.rows[0].next_id);
+            const suffix = String(cardId % 10000).padStart(4, "0");
+            const maskedCardNo = `XXXX-XXXX-XXXX-${suffix}`;
+            const inserted = await client.query(`
+                INSERT INTO DEBIT_CARD (DebitCardID, AccountNo, MaskedCardNo, IssueDate, ExpiryDate, Status)
+                VALUES ($1, $2, $3, CURRENT_DATE, $4::DATE, 'Active')
+                RETURNING DebitCardID, AccountNo, MaskedCardNo, IssueDate, ExpiryDate, Status
+            `, [cardId, accountNo, maskedCardNo, expiryDate]);
+            issued = { cardType: "DEBIT", ...inserted.rows[0] };
+        } else {
+            const customerId = Number(req.body.customerId);
+            const creditLimit = Number(req.body.creditLimit);
+            if (!Number.isInteger(customerId) || customerId <= 0) {
+                await client.query("ROLLBACK");
+                return badRequest(res, "Select a customer for the credit card");
+            }
+            if (!Number.isFinite(creditLimit) || creditLimit <= 0) {
+                await client.query("ROLLBACK");
+                return badRequest(res, "Credit limit must be greater than zero");
+            }
+            const customer = await client.query(`SELECT CustomerID FROM CUSTOMER WHERE CustomerID=$1 AND Status='Active'`, [customerId]);
+            if (!customer.rowCount) {
+                await client.query("ROLLBACK");
+                return res.status(400).json({ success: false, message: "The selected customer does not exist or is not active" });
+            }
+
+            const idResult = await client.query(`SELECT COALESCE(MAX(CreditCardID), 9100) + 1 AS next_id FROM CREDIT_CARD`);
+            const cardId = Number(idResult.rows[0].next_id);
+            const suffix = String(cardId % 10000).padStart(4, "0");
+            const maskedCardNo = `XXXX-XXXX-XXXX-${suffix}`;
+            const inserted = await client.query(`
+                INSERT INTO CREDIT_CARD (CreditCardID, CustomerID, MaskedCardNo, CreditLimit, Outstanding, IssueDate, ExpiryDate, Status)
+                VALUES ($1, $2, $3, $4, 0, CURRENT_DATE, $5::DATE, 'Active')
+                RETURNING CreditCardID, CustomerID, MaskedCardNo, CreditLimit, Outstanding, IssueDate, ExpiryDate, Status
+            `, [cardId, customerId, maskedCardNo, creditLimit, expiryDate]);
+            issued = { cardType: "CREDIT", ...inserted.rows[0] };
+        }
+
+        await client.query("COMMIT");
+        res.status(201).json({ success: true, message: `${cardType === "DEBIT" ? "Debit" : "Credit"} card issued successfully`, data: issued });
+    } catch (error) {
+        try { await client.query("ROLLBACK"); } catch (_) {}
+        throw error;
+    } finally {
+        client.release();
+    }
+}));
+
 app.get("/api/cards", asyncRoute(async(req,res)=>{
     const customerId = req.query.customerId ? Number(req.query.customerId) : null;
     const params = [];

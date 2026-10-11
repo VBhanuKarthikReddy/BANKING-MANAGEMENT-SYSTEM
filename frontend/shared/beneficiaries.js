@@ -172,16 +172,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             const newStatus = item.status === "Active" ? "Blocked" : "Active";
-            try {
-                await apiRequest(`/beneficiaries/${encodeURIComponent(id)}/status`, {
-                    method: "PATCH",
-                    body: JSON.stringify({ customerId, status: newStatus })
-                });
-                showToast(`Beneficiary ${newStatus.toLowerCase()}`);
-                await loadList();
-            } catch (error) {
-                showToast(error.message, "error");
-            }
+            window.openNexusInfoModal({
+                title: `${newStatus === "Blocked" ? "Deactivate" : "Reactivate"} beneficiary?`,
+                description: "This controls whether the beneficiary is available in the transfer dropdown.",
+                icon: newStatus === "Blocked" ? "person_off" : "person_check",
+                content: `<p>${newStatus === "Blocked" ? "Block" : "Reactivate"} <strong>${escapeHtml(item.name)}</strong> (A/C ${escapeHtml(item.beneficiaryaccountno)})?</p>`,
+                actions: [
+                    { label: "Cancel" },
+                    { label: newStatus === "Blocked" ? "Deactivate" : "Reactivate", variant: newStatus === "Blocked" ? "danger" : "primary", onClick: async () => {
+                        await apiRequest(`/beneficiaries/${encodeURIComponent(id)}/status`, {
+                            method: "PATCH",
+                            body: JSON.stringify({ customerId, status: newStatus })
+                        });
+                        showToast(`Beneficiary ${newStatus.toLowerCase()}`);
+                        await loadList();
+                    }}
+                ]
+            });
         });
 
         modal.querySelector("#closeBeneficiaryModal").addEventListener("click", closeModal);

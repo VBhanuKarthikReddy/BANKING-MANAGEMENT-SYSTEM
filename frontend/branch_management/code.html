@@ -117,7 +117,8 @@
         }
     </style>
 <link href="../shared/app-shell.css" rel="stylesheet"/>
-<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<link href="../shared/ui-polish.css" rel="stylesheet"/>
+<link href="../shared/forms.css" rel="stylesheet"/></head>
 <body class="overflow-hidden">
 <!-- Sidebar Navigation -->
 
@@ -152,7 +153,7 @@
 <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Branch Ecosystem</h2>
 <p class="text-on-surface-variant font-body-lg text-body-lg max-w-xl mt-2">Oversee regional operations, monitor liquidity deposits, and manage infrastructure status across the global Nexus network.</p>
 </div>
-<button class="bg-primary-fixed-dim text-on-primary-fixed font-label-caps text-label-caps px-6 py-3 rounded-lg flex items-center gap-2 primary-glow hover:brightness-110 active:scale-95 transition-all">
+<button id="addBranchButton" type="button" class="bg-primary-fixed-dim text-on-primary-fixed font-label-caps text-label-caps px-6 py-3 rounded-lg flex items-center gap-2 primary-glow hover:brightness-110 active:scale-95 transition-all">
 <span class="material-symbols-outlined">add</span>
                     Add New Branch
                 </button>
@@ -470,6 +471,7 @@
         });
     </script>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script src="../shared/branches.js"></script>
 <script src="../shared/staff-dashboard-guard.js"></script>
 <script src="../shared/app-shell.js"></script>

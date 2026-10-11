@@ -47,6 +47,7 @@
 </div>
 </div>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const session = getSession();
@@ -149,12 +150,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!item) return;
     try {
       if (btn.dataset.action === "edit") { openModal(item); return; }
-      if (!confirm(`Delete nominee ${item.name}?`)) return;
-      const query = new URLSearchParams();
-      if (isCustomer) query.set("customerId", customerId);
-      query.set("role", session.role);
-      await apiRequest(`/nominees/${encodeURIComponent(item.nomineeid)}?${query.toString()}`, {method:"DELETE"});
-      showToast("Nominee deleted"); await loadList();
+      window.openNexusInfoModal({
+        title: "Delete nominee?",
+        description: "Remove this nominee from the customer record.",
+        icon: "person_remove",
+        content: `<p>Delete nominee <strong>${escapeHtml(item.name)}</strong> (${escapeHtml(item.relation)})? This action cannot be undone.</p>`,
+        actions: [
+          { label: "Cancel" },
+          { label: "Delete Nominee", variant: "danger", icon: "delete", onClick: async () => {
+            const query = new URLSearchParams();
+            if (isCustomer) query.set("customerId", customerId);
+            query.set("role", session.role);
+            await apiRequest(`/nominees/${encodeURIComponent(item.nomineeid)}?${query.toString()}`, {method:"DELETE"});
+            showToast("Nominee deleted");
+            await loadList();
+          }}
+        ]
+      });
     } catch (err) { showToast(err.message,"error"); }
   });
 

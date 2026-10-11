@@ -94,158 +94,92 @@ document.addEventListener("DOMContentLoaded", async () => {
         return employee;
     }
 
-    function openOnboardModal() {
-        const existing = document.getElementById("employeeOnboardModal");
-        if (existing) existing.remove();
-
-        const modal = document.createElement("div");
-        modal.id = "employeeOnboardModal";
-        modal.className = "fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4";
-        modal.innerHTML = `
-            <div class="w-full max-w-2xl rounded-2xl border border-outline-variant bg-surface-container-high shadow-2xl p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div>
-                        <h3 class="text-xl font-semibold text-on-surface">Onboard Employee</h3>
-                        <p class="text-sm text-on-surface-variant mt-1">Create a new employee record in PostgreSQL.</p>
-                    </div>
-                    <button type="button" id="closeOnboardModal" class="text-2xl text-on-surface-variant hover:text-on-surface">&times;</button>
-                </div>
-
-                <form id="onboardEmployeeForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Employee ID (optional)</span>
-                        <input name="employeeId" type="number" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface" placeholder="Auto-generate">
-                    </label>
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Branch ID *</span>
-                        <input name="branchId" type="number" required value="1" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface">
-                    </label>
-                    <label class="block md:col-span-2">
-                        <span class="text-xs text-on-surface-variant">Employee Name *</span>
-                        <input name="name" type="text" required class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface" placeholder="Full name">
-                    </label>
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Email *</span>
-                        <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface" placeholder="employee@example.com">
-                    </label>
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Role *</span>
-                        <select name="role" required class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface">
-                            <option value="Manager">Manager</option>
-                            <option value="Teller">Teller</option>
-                            <option value="Loan Officer">Loan Officer</option>
-                            <option value="Customer Officer">Customer Officer</option>
-                        </select>
-                    </label>
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Hire Date *</span>
-                        <input name="hireDate" type="date" required value="${new Date().toISOString().slice(0, 10)}" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface">
-                    </label>
-                    <label class="block">
-                        <span class="text-xs text-on-surface-variant">Status *</span>
-                        <select name="status" required class="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface">
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </label>
-                    <div class="md:col-span-2 flex justify-end gap-3 mt-2">
-                        <button type="button" id="cancelOnboardModal" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-semibold">Create Employee</button>
-                    </div>
-                </form>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        const close = () => modal.remove();
-        document.getElementById("closeOnboardModal")?.addEventListener("click", close);
-        document.getElementById("cancelOnboardModal")?.addEventListener("click", close);
-        modal.addEventListener("click", (event) => {
-            if (event.target === modal) close();
-        });
-
-        document.getElementById("onboardEmployeeForm")?.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            try {
-                const form = event.currentTarget;
-                const fd = new FormData(form);
-                const employeeIdRaw = String(fd.get("employeeId") || "").trim();
-
-                await apiRequest("/employees", {
+    async function openOnboardModal() {
+        const branchResult = await apiRequest("/branches");
+        const branches = branchResult.data || [];
+        if (!branches.length) throw new Error("Create a branch before onboarding an employee.");
+        const today = new Date();
+        const todayValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        if (typeof window.openNexusFormModal !== "function") throw new Error("Form modal helper did not load. Refresh the page and try again.");
+        window.openNexusFormModal({
+            title: "Onboard Employee",
+            description: "Create an employee record and assign the person to a branch.",
+            icon: "badge",
+            submitLabel: "Create Employee",
+            fields: [
+                { name: "employeeId", label: "Employee ID", type: "number", min: "1", placeholder: "Auto-generated", help: "Leave blank to assign the next available ID." },
+                { name: "branchId", label: "Branch", type: "select", required: true, placeholder: "Select branch", options: branches.map(b => ({ value: b.branchid, label: `${b.branchname} (ID ${b.branchid})` })) },
+                { name: "name", label: "Full name", required: true, placeholder: "Employee name", wide: true },
+                { name: "email", label: "Email", type: "email", required: true, placeholder: "employee@example.com" },
+                { name: "role", label: "Database role", type: "select", required: true, value: "Teller", options: ["Manager", "Teller", "Loan Officer", "Customer Officer"].map(x => ({ value: x, label: x })) },
+                { name: "hireDate", label: "Hire date", type: "date", required: true, value: todayValue },
+                { name: "status", label: "Status", type: "select", required: true, value: "Active", options: ["Active", "Inactive"].map(x => ({ value: x, label: x })) }
+            ],
+            onSubmit: async values => {
+                const result = await apiRequest("/employees", {
                     method: "POST",
                     body: JSON.stringify({
-                        employeeId: employeeIdRaw ? Number(employeeIdRaw) : null,
-                        branchId: Number(fd.get("branchId")),
-                        name: String(fd.get("name") || "").trim(),
-                        email: String(fd.get("email") || "").trim(),
-                        role: String(fd.get("role") || "").trim(),
-                        hireDate: String(fd.get("hireDate") || ""),
-                        status: String(fd.get("status") || "Active")
+                        employeeId: values.employeeId ? Number(values.employeeId) : null,
+                        branchId: Number(values.branchId), name: values.name.trim(), email: values.email.trim(),
+                        role: values.role, hireDate: values.hireDate, status: values.status
                     })
                 });
-
-                close();
-                showToast("Employee created successfully");
+                showToast(result.message || "Employee created successfully");
                 await load();
-            } catch (error) {
-                showToast(error.message, "error");
             }
         });
     }
 
     async function editEmployee(id) {
-        const e = await getEmployee(id);
-
-        const branchId = prompt("Branch ID:", e.branchid);
-        if (branchId === null) return;
-
-        const name = prompt("Employee name:", e.name);
-        if (name === null) return;
-
-        const email = prompt("Email:", e.email);
-        if (email === null) return;
-
-        const role = prompt("Role:", e.role);
-        if (role === null) return;
-
-        const hireDate = prompt("Hire date (YYYY-MM-DD):", String(e.hiredate).slice(0, 10));
-        if (hireDate === null) return;
-
-        const status = prompt("Status (Active/Inactive):", e.status);
-        if (status === null) return;
-
-        await apiRequest(`/employees/${encodeURIComponent(id)}`, {
-            method: "PUT",
-            body: JSON.stringify({
-                branchId: Number(branchId),
-                name: name.trim(),
-                email: email.trim(),
-                role: role.trim(),
-                hireDate,
-                status: status.trim()
-            })
+        const employee = await getEmployee(id);
+        const branchResult = await apiRequest("/branches");
+        const branches = branchResult.data || [];
+        if (typeof window.openNexusFormModal !== "function") throw new Error("Form modal helper did not load. Refresh the page and try again.");
+        window.openNexusFormModal({
+            title: `Edit Employee #${id}`,
+            description: "Update the employee profile, branch assignment, job role and employment status.",
+            icon: "manage_accounts",
+            submitLabel: "Save Employee",
+            fields: [
+                { name: "branchId", label: "Branch", type: "select", required: true, value: employee.branchid, options: branches.map(b => ({ value: b.branchid, label: `${b.branchname} (ID ${b.branchid})` })) },
+                { name: "name", label: "Employee name", required: true, value: employee.name || "", wide: true },
+                { name: "email", label: "Email", type: "email", required: true, value: employee.email || "" },
+                { name: "role", label: "Database role", type: "select", required: true, value: employee.role || "Teller", options: ["Manager", "Teller", "Loan Officer", "Customer Officer"].map(x => ({ value: x, label: x })) },
+                { name: "hireDate", label: "Hire date", type: "date", required: true, value: String(employee.hiredate || "").slice(0, 10) },
+                { name: "status", label: "Status", type: "select", required: true, value: employee.status || "Active", options: ["Active", "Inactive"].map(x => ({ value: x, label: x })) }
+            ],
+            onSubmit: async values => {
+                await apiRequest(`/employees/${encodeURIComponent(id)}`, {
+                    method: "PUT",
+                    body: JSON.stringify({ branchId: Number(values.branchId), name: values.name.trim(), email: values.email.trim(), role: values.role, hireDate: values.hireDate, status: values.status })
+                });
+                showToast("Employee updated successfully");
+                await load();
+            }
         });
-
-        showToast("Employee updated successfully");
-        await load();
     }
 
     async function deleteEmployee(id) {
-        const e = await getEmployee(id);
-        if (!confirm(`Delete employee ${e.name} (ID ${id})?`)) return;
-
-        await apiRequest(`/employees/${encodeURIComponent(id)}`, {
-            method: "DELETE"
+        const employee = await getEmployee(id);
+        window.openNexusInfoModal({
+            title: "Delete employee?",
+            description: "This permanently removes the employee record if no related record prevents deletion.",
+            icon: "person_remove",
+            content: `<p>Delete <strong>${escapeHtml(employee.name)}</strong> (Employee ID ${escapeHtml(id)})?</p>`,
+            actions: [
+                { label: "Cancel" },
+                { label: "Delete Employee", variant: "danger", icon: "delete", onClick: async () => {
+                    await apiRequest(`/employees/${encodeURIComponent(id)}`, { method: "DELETE" });
+                    showToast("Employee deleted successfully");
+                    await load();
+                }}
+            ]
         });
-
-        showToast("Employee deleted successfully");
-        await load();
     }
 
-    onboardBtn?.addEventListener("click", () => {
-        openOnboardModal();
+    onboardBtn?.addEventListener("click", async () => {
+        try { await openOnboardModal(); }
+        catch (error) { showToast(error.message || "Unable to open onboarding form", "error"); }
     });
 
     body?.addEventListener("click", async event => {

@@ -120,7 +120,8 @@
         }
     </script>
 <link href="../shared/app-shell.css" rel="stylesheet"/>
-<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<link href="../shared/ui-polish.css" rel="stylesheet"/>
+<link href="../shared/forms.css" rel="stylesheet"/></head>
 <body class="bg-background text-on-background font-body-lg overflow-hidden flex h-screen">
 <!-- SideNavBar (Shared Component) -->
 
@@ -155,7 +156,7 @@
 <p class="text-on-surface-variant font-body-lg" id="accountsPageSubtitle">Manage customer accounts, balances, and account status.</p>
 </div>
 <div class="col-span-12 lg:col-span-4 flex items-center justify-end gap-3">
-<button class="px-5 py-2.5 bg-primary-fixed-dim text-on-primary-fixed font-bold rounded-lg neon-glow-primary hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<button id="createAccountButton" type="button" class="px-5 py-2.5 bg-primary-fixed-dim text-on-primary-fixed font-bold rounded-lg neon-glow-primary hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
 <span class="material-symbols-outlined">add</span> Create New Account
                     </button>
 <button class="px-3 py-2.5 border border-outline-variant text-on-surface hover:bg-surface-container-high rounded-lg active:scale-95 transition-all">
@@ -351,6 +352,7 @@
         });
     </script>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script src="../shared/accounts.js"></script>
 <script src="../shared/app-shell.js"></script>
 </body></html>

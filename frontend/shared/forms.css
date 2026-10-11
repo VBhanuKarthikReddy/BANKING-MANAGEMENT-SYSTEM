@@ -1,0 +1,106 @@
+:root {
+    --form-bg: #0f172a;
+    --form-panel: #111c30;
+    --form-border: #29384f;
+    --form-text: #e5edf8;
+    --form-muted: #94a3b8;
+    --form-cyan: #22d3ee;
+    --form-green: #10b981;
+}
+.nexus-modal-backdrop {
+    position: fixed; inset: 0; z-index: 50000; display: grid; place-items: center;
+    padding: 20px; background: rgba(1, 6, 18, .78); backdrop-filter: blur(8px);
+    animation: nexus-modal-fade .16s ease-out;
+}
+.nexus-modal {
+    width: min(700px, 100%); max-height: min(90vh, 900px); overflow: auto;
+    background: linear-gradient(160deg, #142238 0%, var(--form-bg) 62%);
+    color: var(--form-text); border: 1px solid var(--form-border); border-radius: 18px;
+    box-shadow: 0 28px 90px rgba(0,0,0,.56); font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.nexus-modal-header { display: flex; align-items: flex-start; gap: 14px; padding: 24px 26px 20px; border-bottom: 1px solid rgba(148,163,184,.16); }
+.nexus-modal-heading-icon { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px; color: #04202a; background: var(--form-cyan); box-shadow: 0 0 24px rgba(34,211,238,.14); }
+.nexus-modal-heading-icon .material-symbols-outlined { font-size: 24px; }
+.nexus-modal-heading-copy { flex: 1; min-width: 0; }
+.nexus-modal-heading-copy h2 { margin: 1px 0 5px; font-size: 21px; line-height: 1.25; font-weight: 800; letter-spacing: -.025em; color: #f8fafc; }
+.nexus-modal-heading-copy p { margin: 0; color: var(--form-muted); font-size: 13px; line-height: 1.5; }
+.nexus-modal-close { display: grid; place-items: center; border: 1px solid transparent; border-radius: 9px; width: 36px; height: 36px; color: #94a3b8; background: transparent; cursor: pointer; }
+.nexus-modal-close:hover { color: white; border-color: var(--form-border); background: rgba(148,163,184,.08); }
+.nexus-modal-form { padding: 22px 26px 24px; }
+.nexus-modal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 16px; }
+.nexus-form-field { min-width: 0; }
+.nexus-form-field[hidden] { display: none !important; }
+.nexus-form-field.nexus-field-wide { grid-column: 1 / -1; }
+.nexus-form-field label { display: block; margin: 0 0 8px; color: #cbd5e1; font-size: 12px; font-weight: 750; letter-spacing: .045em; }
+.nexus-required { color: #fb7185; }
+.nexus-form-field input, .nexus-form-field select, .nexus-form-field textarea {
+    display: block; box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px 12px;
+    border: 1px solid #334155 !important; border-radius: 10px !important; outline: none;
+    background: #020617 !important; color: #e2e8f0 !important; font: 500 14px/1.45 Inter, ui-sans-serif, system-ui, sans-serif;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.015); transition: border-color .15s ease, box-shadow .15s ease;
+}
+.nexus-form-field textarea { resize: vertical; min-height: 86px; }
+.nexus-form-field input:focus, .nexus-form-field select:focus, .nexus-form-field textarea:focus { border-color: var(--form-cyan) !important; box-shadow: 0 0 0 3px rgba(34,211,238,.12); }
+.nexus-form-field input::placeholder, .nexus-form-field textarea::placeholder { color: #64748b; }
+.nexus-form-field small { display: block; margin-top: 6px; color: #74869f; font-size: 11px; line-height: 1.4; }
+.nexus-modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid rgba(148,163,184,.16); margin-top: 24px; padding-top: 19px; }
+.nexus-modal-note { display: flex; align-items: center; gap: 6px; color: #71839b; font-size: 11px; line-height: 1.4; }
+.nexus-modal-note .material-symbols-outlined { font-size: 15px; color: #34d399; }
+.nexus-modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+.nexus-btn { min-height: 41px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border: 1px solid transparent; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform .12s ease, background .15s ease, border-color .15s ease; }
+.nexus-btn:active { transform: scale(.98); }
+.nexus-btn:disabled { opacity: .7; cursor: wait; }
+.nexus-btn .material-symbols-outlined { font-size: 18px; }
+.nexus-btn-primary { background: var(--form-cyan); color: #05202b; }
+.nexus-btn-primary:hover { background: #67e8f9; box-shadow: 0 0 22px rgba(34,211,238,.12); }
+.nexus-btn-secondary { background: #162236; border-color: #334155; color: #cbd5e1; }
+.nexus-btn-secondary:hover { background: #1e293b; color: white; }
+.nexus-spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(3,31,41,.3); border-top-color: #05202b; animation: nexus-spin .7s linear infinite; }
+@keyframes nexus-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nexus-spin { to { transform: rotate(360deg); } }
+@media (max-width: 620px) {
+    .nexus-modal-backdrop { padding: 10px; }
+    .nexus-modal-header { padding: 19px 18px 16px; gap: 10px; }
+    .nexus-modal-heading-icon { width: 38px; height: 38px; flex-basis: 38px; }
+    .nexus-modal-heading-copy h2 { font-size: 18px; }
+    .nexus-modal-form { padding: 18px; }
+    .nexus-modal-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .nexus-form-field.nexus-field-wide { grid-column: auto; }
+    .nexus-modal-footer { align-items: stretch; flex-direction: column; }
+    .nexus-modal-actions { width: 100%; }
+    .nexus-modal-actions .nexus-btn { flex: 1; }
+}
+
+.nexus-btn-danger { background: #7f1d1d; border-color: #991b1b; color: #fee2e2; }
+.nexus-btn-danger:hover { background: #991b1b; }
+.nexus-info-content { color: #dbe7f5; font-size: 14px; line-height: 1.55; }
+.nexus-info-content p { margin: 0; }
+.nexus-inline-action { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 7px 10px; border: 1px solid #34465f; border-radius: 9px; background: #111f32; color: #c8f7ff; font-size: 12px; font-weight: 750; transition: background .15s ease, border-color .15s ease; }
+.nexus-inline-action:hover { background: #123244; border-color: #22d3ee; color: #67e8f9; }
+.nexus-inline-action .material-symbols-outlined { font-size: 16px; }
+.nexus-icon-action { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid #34465f; border-radius: 9px; background: #111f32; color: #a5f3fc; }
+.nexus-icon-action:hover { background: #123244; border-color: #22d3ee; }
+.nexus-payment-list { display: grid; gap: 12px; }
+.nexus-payment-item { padding: 16px; border: 1px solid #2d3d53; border-radius: 13px; background: rgba(15, 23, 42, .72); }
+.nexus-payment-top, .nexus-payment-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.nexus-payment-top { margin-bottom: 14px; }
+.nexus-payment-title { margin: 0; color: #f1f5f9; font-weight: 800; }
+.nexus-payment-meta { color: #94a3b8; font-size: 12px; }
+.nexus-payment-bottom strong { color: #f8fafc; font-size: 18px; font-variant-numeric: tabular-nums; }
+.nexus-status-pill { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: capitalize; }
+.nexus-status-good { color: #6ee7b7; background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.28); }
+.nexus-status-warn { color: #fcd34d; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.28); }
+.nexus-status-muted { color: #cbd5e1; background: rgba(100,116,139,.15); border: 1px solid rgba(100,116,139,.28); }
+.nexus-empty-panel { padding: 22px 16px; border: 1px dashed #34465f; border-radius: 12px; text-align: center; }
+.nexus-empty-panel > .material-symbols-outlined { color: #67e8f9; font-size: 30px; }
+.nexus-empty-panel h3 { margin: 8px 0 4px; color: #f1f5f9; font-weight: 800; }
+.nexus-empty-panel p { color: #94a3b8; font-size: 13px; }
+.nexus-emi-hero { padding: 20px; border: 1px solid rgba(34,211,238,.24); border-radius: 14px; background: linear-gradient(135deg, rgba(8,145,178,.2), rgba(15,23,42,.8)); }
+.nexus-emi-hero span, .nexus-emi-hero small { display: block; color: #a5b4c8; font-size: 12px; }
+.nexus-emi-hero strong { display: block; margin: 5px 0; color: #67e8f9; font-size: clamp(25px, 5vw, 34px); font-weight: 850; font-variant-numeric: tabular-nums; }
+.nexus-emi-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 13px; }
+.nexus-emi-grid > div { padding: 13px; border: 1px solid #29384f; border-radius: 10px; background: rgba(15,23,42,.7); }
+.nexus-emi-grid span, .nexus-emi-grid strong { display: block; }
+.nexus-emi-grid span { color: #94a3b8; font-size: 11px; }
+.nexus-emi-grid strong { margin-top: 4px; color: #e2e8f0; font-weight: 800; }
+@media (max-width: 620px) { .nexus-payment-top, .nexus-payment-bottom { align-items: flex-start; flex-direction: column; } .nexus-emi-grid { grid-template-columns: minmax(0,1fr); } }

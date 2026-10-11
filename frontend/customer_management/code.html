@@ -133,7 +133,8 @@
         }
     </style>
 <link href="../shared/app-shell.css" rel="stylesheet"/>
-<link href="../shared/ui-polish.css" rel="stylesheet"/></head>
+<link href="../shared/ui-polish.css" rel="stylesheet"/>
+<link href="../shared/forms.css" rel="stylesheet"/></head>
 <body class="dark selection:bg-primary-container selection:text-on-primary-container">
 <div class="flex min-h-screen">
 <!-- SideNavBar -->
@@ -158,7 +159,7 @@
 <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">settings</button>
 </div>
 <div class="h-8 w-[1px] bg-outline-variant"></div>
-<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all glow-primary">
+<button id="addCustomerButton" type="button" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all glow-primary">
 <span class="material-symbols-outlined text-sm">person_add</span>
                         Add New Customer
                     </button>
@@ -396,6 +397,7 @@
         });
     </script>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script src="../shared/customers.js"></script>
 <script src="../shared/staff-dashboard-guard.js"></script>
 <script src="../shared/app-shell.js"></script>

@@ -40,3 +40,11 @@ Password-based login with bcrypt-hashed credentials stored in `USER_CREDENTIAL`,
 5. Open `http://localhost:3000`.
 
 Demo password used during development: `Bank@123`. Change it before sharing outside the development/demo environment.
+
+## Latest UI update: Admin creation forms
+
+See [`README-ADMIN-CREATION-FORMS.md`](README-ADMIN-CREATION-FORMS.md) for the shared modal forms for creating customers, branches, accounts, and cards, plus local run/test instructions.
+
+## Recent UI/action update
+
+See `README-LOAN-TRANSACTION-ACCOUNT-ACTIONS-V2.md` for details about the styled transfer confirmation, external beneficiary handling, account deposit/withdrawal dialogs, due-date-aware loan payments, and action dialogs across modules.

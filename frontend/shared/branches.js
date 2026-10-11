@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const body = document.querySelector("table tbody");
     const search = document.querySelector('input[placeholder="Filter by branch code or manager..."]');
-    const addButton = [...document.querySelectorAll("button")].find(b => b.textContent.includes("Add New Branch"));
+    const addButton = document.getElementById("addBranchButton");
     const branchCache = new Map();
 
     async function load() {
@@ -32,17 +32,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     search?.addEventListener("input", load);
 
-    addButton?.addEventListener("click", async () => {
-        const branchCode=prompt("Branch code:"); if(!branchCode)return;
-        const branchName=prompt("Branch name:"); if(!branchName)return;
-        const ifsc=prompt("IFSC:"); if(!ifsc)return;
-        const address=prompt("Address:"); if(!address)return;
-        const phone=prompt("Phone:"); if(!phone)return;
-        try{
-            await apiRequest("/branches",{method:"POST",body:JSON.stringify({branchCode,branchName,ifsc,address,phone})});
-            showToast("Branch created");
-            await load();
-        } catch(e){showToast(e.message,"error");}
+    addButton?.addEventListener("click", () => {
+        openNexusFormModal({
+            title: "Add New Branch",
+            description: "Register a branch and its identifying details. Leave Branch ID blank for automatic assignment.",
+            icon: "account_tree",
+            submitLabel: "Create Branch",
+            fields: [
+                { name: "branchId", label: "Branch ID", type: "number", min: "1", placeholder: "Auto-generated", help: "Optional; the system can assign the next ID." },
+                { name: "branchCode", label: "Branch code", required: true, placeholder: "e.g. BR006" },
+                { name: "branchName", label: "Branch name", required: true, placeholder: "e.g. Kochi Central Branch" },
+                { name: "ifsc", label: "IFSC code", required: true, placeholder: "e.g. NEXU0000006" },
+                { name: "phone", label: "Contact phone", type: "tel", required: true, placeholder: "Branch phone number" },
+                { name: "address", label: "Branch address", type: "textarea", required: true, wide: true, placeholder: "Full branch address" }
+            ],
+            onSubmit: async (values) => {
+                await apiRequest("/branches", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        branchId: values.branchId ? Number(values.branchId) : null,
+                        branchCode: values.branchCode.trim(),
+                        branchName: values.branchName.trim(),
+                        ifsc: values.ifsc.trim().toUpperCase(),
+                        address: values.address.trim(),
+                        phone: values.phone.trim()
+                    })
+                });
+                showToast("Branch created successfully");
+                await load();
+            }
+        });
     });
 
     body?.addEventListener("click", async e => {
@@ -53,34 +72,48 @@ document.addEventListener("DOMContentLoaded", async () => {
         const branch=branchCache.get(id);
         if(!branch) return;
 
-        if(btn.dataset.action === "edit") {
-            const branchCode=prompt("Branch code:", branch.branchcode || ""); if(branchCode===null)return;
-            const branchName=prompt("Branch name:", branch.branchname || ""); if(branchName===null)return;
-            const ifsc=prompt("IFSC:", branch.ifsc || ""); if(ifsc===null)return;
-            const address=prompt("Address:", branch.address || ""); if(address===null)return;
-            const phone=prompt("Phone:", branch.phone || ""); if(phone===null)return;
-            try {
-                await apiRequest(`/branches/${id}`, {
-                    method:"PUT",
-                    body:JSON.stringify({branchCode,branchName,ifsc,address,phone})
-                });
-                showToast("Branch updated");
-                await load();
-            } catch(e) {
-                showToast(e.message,"error");
-            }
+        if (btn.dataset.action === "edit") {
+            openNexusFormModal({
+                title: `Edit Branch #${id}`,
+                description: "Update branch details. Existing customer/account relationships remain linked by Branch ID.",
+                icon: "account_tree",
+                submitLabel: "Save Branch",
+                fields: [
+                    { name: "branchCode", label: "Branch code", required: true, value: branch.branchcode || "" },
+                    { name: "branchName", label: "Branch name", required: true, value: branch.branchname || "" },
+                    { name: "ifsc", label: "IFSC code", required: true, value: branch.ifsc || "" },
+                    { name: "phone", label: "Contact phone", type: "tel", required: true, value: branch.phone || "" },
+                    { name: "address", label: "Branch address", type: "textarea", required: true, wide: true, value: branch.address || "" }
+                ],
+                onSubmit: async values => {
+                    await apiRequest(`/branches/${encodeURIComponent(id)}`, {
+                        method: "PUT",
+                        body: JSON.stringify({
+                            branchCode: values.branchCode.trim(), branchName: values.branchName.trim(),
+                            ifsc: values.ifsc.trim().toUpperCase(), address: values.address.trim(), phone: values.phone.trim()
+                        })
+                    });
+                    showToast("Branch updated successfully");
+                    await load();
+                }
+            });
+        } else if (btn.dataset.action === "delete") {
+            window.openNexusInfoModal({
+                title: "Delete branch?",
+                description: "Branches referenced by accounts or employees cannot be removed.",
+                icon: "delete_forever",
+                content: `<p>Delete <strong>${escapeHtml(branch.branchname)}</strong> (${escapeHtml(branch.branchcode)})? PostgreSQL will preserve referential integrity and reject the deletion if records still depend on this branch.</p>`,
+                actions: [
+                    { label: "Cancel" },
+                    { label: "Delete Branch", variant: "danger", icon: "delete", onClick: async () => {
+                        await apiRequest(`/branches/${encodeURIComponent(id)}`, { method: "DELETE" });
+                        showToast("Branch deleted successfully");
+                        await load();
+                    }}
+                ]
+            });
         }
 
-        if(btn.dataset.action === "delete") {
-            if(!confirm(`Delete branch ${branch.branchname} (${branch.branchcode})?`)) return;
-            try {
-                await apiRequest(`/branches/${id}`, {method:"DELETE"});
-                showToast("Branch deleted");
-                await load();
-            } catch(e) {
-                showToast(e.message,"error");
-            }
-        }
     });
 
     load();

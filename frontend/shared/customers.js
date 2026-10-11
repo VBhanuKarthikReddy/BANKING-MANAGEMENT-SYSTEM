@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const tableBody = document.querySelector("table tbody");
     const search = document.querySelector('input[placeholder="Search customer database..."]');
-    const addButton = [...document.querySelectorAll("button")].find(b => b.textContent.includes("Add New Customer"));
+    const addButton = document.getElementById("addCustomerButton");
 
     async function load() {
         try {
@@ -40,47 +40,80 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    async function createCustomer() {
-        const name = prompt("Customer name:"); if (!name) return;
-        const dob = prompt("DOB (YYYY-MM-DD):"); if (!dob) return;
-        const gender = prompt("Gender (Male/Female/Other):", "Male"); if (!gender) return;
-        const phone = prompt("Phone:"); if (!phone) return;
-        const email = prompt("Email:", "");
-        const address = prompt("Address:", ""); if (!address) return;
-
-        await apiRequest("/customers", {
-            method: "POST",
-            body: JSON.stringify({ name, dob, gender, phone, email, address, kycStatus: "Pending", status: "Active" })
+    function createCustomer() {
+        return openNexusFormModal({
+            title: "Add New Customer",
+            description: "Create a customer profile in the bank registry. Customer ID can be generated automatically.",
+            icon: "person_add",
+            submitLabel: "Create Customer",
+            fields: [
+                { name: "customerId", label: "Customer ID", type: "number", min: "1", placeholder: "Auto-generated", help: "Leave blank to let the system assign the next ID." },
+                { name: "name", label: "Full name", required: true, placeholder: "e.g. Ananya Nair" },
+                { name: "dob", label: "Date of birth", type: "date", required: true },
+                { name: "gender", label: "Gender", type: "select", required: true, value: "Female", options: [
+                    { value: "Male", label: "Male" }, { value: "Female", label: "Female" }, { value: "Other", label: "Other" }
+                ] },
+                { name: "phone", label: "Phone number", type: "tel", required: true, placeholder: "Mobile number" },
+                { name: "email", label: "Email address", type: "email", placeholder: "name@example.com" },
+                { name: "address", label: "Residential address", type: "textarea", required: true, wide: true, placeholder: "Street, city, state, PIN code" }
+            ],
+            onSubmit: async (values) => {
+                await apiRequest("/customers", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        customerId: values.customerId ? Number(values.customerId) : null,
+                        name: values.name.trim(),
+                        dob: values.dob,
+                        gender: values.gender,
+                        phone: values.phone.trim(),
+                        email: values.email.trim() || null,
+                        address: values.address.trim(),
+                        kycStatus: "Pending",
+                        status: "Active"
+                    })
+                });
+                showToast("Customer created successfully");
+                await load();
+            }
         });
-
-        showToast("Customer created successfully");
-        await load();
     }
 
     async function editCustomer(id) {
-        const current = await apiRequest(`/customers`).then(r => r.data.find(c => String(c.customerid) === String(id)));
-        if (!current) return showToast("Customer not found", "error");
-
-        const name = prompt("Customer name:", current.name); if (!name) return;
-        const dob = prompt("DOB (YYYY-MM-DD):", String(current.dob || "").slice(0, 10)); if (!dob) return;
-        const gender = prompt("Gender (Male/Female/Other):", current.gender || "Male"); if (!gender) return;
-        const phone = prompt("Phone:", current.phone || ""); if (!phone) return;
-        const email = prompt("Email:", current.email || "");
-        const address = prompt("Address:", current.address || ""); if (!address) return;
-        const kycStatus = prompt("KYC Status (Pending/Verified/Rejected):", current.kycstatus || "Pending"); if (!kycStatus) return;
-        const status = prompt("Status (Active/Blocked):", current.status || "Active"); if (!status) return;
-
-        await apiRequest(`/customers/${encodeURIComponent(id)}`, {
-            method: "PUT",
-            body: JSON.stringify({ name, dob, gender, phone, email, address, kycStatus, status })
+        const result = await apiRequest(`/customers?search=${encodeURIComponent(id)}`);
+        const current = (result.data || []).find(c => String(c.customerid) === String(id));
+        if (!current) throw new Error("Customer not found");
+        openNexusFormModal({
+            title: `Edit Customer #${id}`,
+            description: "Update the customer profile and KYC status.",
+            icon: "manage_accounts",
+            submitLabel: "Save Customer",
+            fields: [
+                { name: "name", label: "Full name", required: true, value: current.name || "" },
+                { name: "dob", label: "Date of birth", type: "date", required: true, value: String(current.dob || "").slice(0, 10) },
+                { name: "gender", label: "Gender", type: "select", required: true, value: current.gender || "Other", options: ["Male", "Female", "Other"].map(x => ({ value: x, label: x })) },
+                { name: "phone", label: "Phone number", type: "tel", required: true, value: current.phone || "" },
+                { name: "email", label: "Email address", type: "email", value: current.email || "" },
+                { name: "kycStatus", label: "KYC status", type: "select", required: true, value: current.kycstatus || "Pending", options: ["Pending", "Verified", "Rejected"].map(x => ({ value: x, label: x })) },
+                { name: "status", label: "Customer status", type: "select", required: true, value: current.status || "Active", options: ["Active", "Blocked"].map(x => ({ value: x, label: x })) },
+                { name: "address", label: "Residential address", type: "textarea", required: true, wide: true, value: current.address || "" }
+            ],
+            onSubmit: async values => {
+                await apiRequest(`/customers/${encodeURIComponent(id)}`, {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        name: values.name.trim(), dob: values.dob, gender: values.gender,
+                        phone: values.phone.trim(), email: values.email.trim() || null,
+                        address: values.address.trim(), kycStatus: values.kycStatus, status: values.status
+                    })
+                });
+                showToast("Customer updated successfully");
+                await load();
+            }
         });
-
-        showToast("Customer updated successfully");
-        await load();
     }
 
     search?.addEventListener("input", load);
-    addButton?.addEventListener("click", () => createCustomer().catch(e => showToast(e.message, "error")));
+    addButton?.addEventListener("click", () => createCustomer());
 
     tableBody?.addEventListener("click", async (event) => {
         const button = event.target.closest("button[data-action]");
@@ -91,28 +124,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             if (button.dataset.action === "view") {
                 const r = await apiRequest(`/customers?search=${encodeURIComponent(id)}`);
-                const customer = r.data.find(c => String(c.customerid) === String(id));
+                const customer = (r.data || []).find(c => String(c.customerid) === String(id));
                 if (!customer) return showToast("Customer not found", "error");
-                alert([
-                    `Customer ID: ${customer.customerid}`,
-                    `Name: ${customer.name}`,
-                    `Phone: ${customer.phone || "—"}`,
-                    `Email: ${customer.email || "—"}`,
-                    `KYC: ${customer.kycstatus || "—"}`,
-                    `Status: ${customer.status || "—"}`,
-                    `Accounts: ${customer.accountcount || 0}`,
-                    `Balance: ${formatMoney(customer.balancetotal)}`
-                ].join("\n"));
-            }
-
-            if (button.dataset.action === "edit") {
+                window.openNexusInfoModal({
+                    title: customer.name,
+                    description: `Customer profile · ID ${customer.customerid}`,
+                    icon: "person",
+                    content: `<div class="nexus-emi-grid"><div><span>Phone</span><strong>${escapeHtml(customer.phone || "—")}</strong></div><div><span>Email</span><strong>${escapeHtml(customer.email || "—")}</strong></div><div><span>KYC status</span><strong>${escapeHtml(customer.kycstatus || "—")}</strong></div><div><span>Customer status</span><strong>${escapeHtml(customer.status || "—")}</strong></div><div><span>Accounts</span><strong>${escapeHtml(customer.accountcount || 0)}</strong></div><div><span>Total balance</span><strong>${formatMoney(customer.balancetotal)}</strong></div><div class="nexus-field-wide"><span>Address</span><strong>${escapeHtml(customer.address || "—")}</strong></div></div>`,
+                    actions: [{ label: "Close" }]
+                });
+            } else if (button.dataset.action === "edit") {
                 await editCustomer(id);
-            }
-
-            if (button.dataset.action === "delete" && confirm("Delete this customer? Related records may prevent deletion.")) {
-                await apiRequest(`/customers/${encodeURIComponent(id)}`, { method: "DELETE" });
-                showToast("Customer deleted successfully");
-                await load();
+            } else if (button.dataset.action === "delete") {
+                const r = await apiRequest(`/customers?search=${encodeURIComponent(id)}`);
+                const customer = (r.data || []).find(c => String(c.customerid) === String(id));
+                if (!customer) throw new Error("Customer not found");
+                window.openNexusInfoModal({
+                    title: "Delete customer?",
+                    description: "This is a permanent database operation and related records may prevent deletion.",
+                    icon: "delete_forever",
+                    content: `<p>Delete <strong>${escapeHtml(customer.name)}</strong> (Customer ID ${escapeHtml(id)})? Accounts, loans or other foreign-key references may cause PostgreSQL to reject this operation.</p>`,
+                    actions: [
+                        { label: "Cancel" },
+                        { label: "Delete Customer", variant: "danger", icon: "delete", onClick: async () => {
+                            await apiRequest(`/customers/${encodeURIComponent(id)}`, { method: "DELETE" });
+                            showToast("Customer deleted successfully");
+                            await load();
+                        }}
+                    ]
+                });
             }
         } catch (e) {
             showToast(e.message, "error");

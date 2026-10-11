@@ -78,17 +78,24 @@ async function loadFDs() {
   if (isStaff) {
     document.querySelectorAll(".fd-status").forEach(select => {
       select.addEventListener("change", async () => {
-        try {
-          await apiRequest(`/fixed-deposits/${encodeURIComponent(select.dataset.id)}/status`, {
-            method: "PATCH",
-            body: JSON.stringify({ status: select.value, role: session.role })
-          });
-          showToast("Fixed-deposit status updated");
-          await loadFDs();
-        } catch (e) {
-          showToast(e.message, "error");
-          await loadFDs();
-        }
+        const nextStatus = select.value;
+        const fdId = select.dataset.id;
+        await loadFDs(); // restore the displayed status until the action is confirmed
+        window.openNexusFormModal({
+          title: `Update Fixed Deposit #${fdId}`,
+          description: "Confirm the new fixed-deposit status. This change is recorded in PostgreSQL.",
+          icon: "savings",
+          submitLabel: "Update Status",
+          fields: [{ name: "status", label: "Fixed-deposit status", type: "select", required: true, value: nextStatus, options: ["Active", "Matured", "Closed", "Premature"].map(x => ({ value: x, label: x })) }],
+          onSubmit: async values => {
+            await apiRequest(`/fixed-deposits/${encodeURIComponent(fdId)}/status`, {
+              method: "PATCH",
+              body: JSON.stringify({ status: values.status })
+            });
+            showToast("Fixed-deposit status updated");
+            await loadFDs();
+          }
+        });
       });
     });
   }

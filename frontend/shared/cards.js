@@ -59,17 +59,81 @@ document.addEventListener("DOMContentLoaded", async () => {
     search?.addEventListener("input", render);
     statusFilter?.addEventListener("change", render);
 
+
+    issueButton?.addEventListener("click", async () => {
+        if (!isStaff) return showToast("Staff access required to issue a card", "error");
+        try {
+            const [customerResult, accountResult] = await Promise.all([
+                apiRequest("/customers"),
+                apiRequest("/accounts")
+            ]);
+            const activeCustomers = (customerResult.data || []).filter(c => String(c.status).toLowerCase() === "active");
+            const activeAccounts = (accountResult.data || []).filter(a => String(a.status).toLowerCase() === "active");
+            if (!activeCustomers.length) return showToast("Create an active customer before issuing a card", "error");
+            if (!activeAccounts.length) return showToast("Create an active account before issuing a debit card", "error");
+
+            const customerOptions = activeCustomers.map(c => ({ value: c.customerid, label: `${c.name} (ID ${c.customerid})` }));
+            const accountOptions = activeAccounts.map(a => ({ value: a.accountno, label: `Account ${a.accountno} · ${a.holders || "Account holder"} · ${formatMoney(a.balance || 0)}` }));
+            const expiry = new Date();
+            expiry.setFullYear(expiry.getFullYear() + 4);
+            const expiryDate = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, "0")}-${String(expiry.getDate()).padStart(2, "0")}`;
+
+            openNexusFormModal({
+                title: "Issue New Card",
+                description: "Create a debit card linked to an active account or a credit card for a customer.",
+                icon: "credit_card",
+                submitLabel: "Issue Card",
+                fields: [
+                    { name: "cardType", label: "Card type", type: "select", required: true, value: "DEBIT", options: [
+                        { value: "DEBIT", label: "Debit card" }, { value: "CREDIT", label: "Credit card" }
+                    ] },
+                    { name: "accountNo", label: "Linked account", type: "select", required: true, placeholder: "Select an active account", options: accountOptions, wide: true, visibleWhen: { field: "cardType", value: "DEBIT" }, help: "Debit cards are associated with the account's primary holder." },
+                    { name: "customerId", label: "Cardholder", type: "select", required: true, placeholder: "Select a customer", options: customerOptions, wide: true, visibleWhen: { field: "cardType", value: "CREDIT" } },
+                    { name: "creditLimit", label: "Credit limit (₹)", type: "number", min: "1", step: "0.01", required: true, placeholder: "e.g. 50000", visibleWhen: { field: "cardType", value: "CREDIT" }, help: "Outstanding starts at ₹0.00." },
+                    { name: "expiryDate", label: "Expiry date", type: "date", required: true, value: expiryDate, wide: true, help: "The issue date is set automatically to today." }
+                ],
+                onSubmit: async (values) => {
+                    const payload = {
+                        cardType: values.cardType,
+                        expiryDate: values.expiryDate
+                    };
+                    if (values.cardType === "DEBIT") {
+                        payload.accountNo = Number(values.accountNo);
+                    } else {
+                        payload.customerId = Number(values.customerId);
+                        payload.creditLimit = Number(values.creditLimit);
+                    }
+                    const result = await apiRequest("/cards", { method: "POST", body: JSON.stringify(payload) });
+                    showToast(result.message || "Card issued successfully");
+                    await load();
+                }
+            });
+        } catch (error) {
+            showToast(error.message || "Unable to load card form", "error");
+        }
+    });
+
     body?.addEventListener("click", async (e) => {
         const b = e.target.closest("button[data-id]");
         if (!b) return;
         if (!isStaff) return;
         const endpoint = b.dataset.kind === "debit" ? `/cards/debit/${b.dataset.id}/status` : `/cards/credit/${b.dataset.id}/status`;
         const status = b.dataset.status === "Active" ? "Blocked" : "Active";
-        try {
-            await apiRequest(endpoint, { method: "PATCH", body: JSON.stringify({ status }) });
-            showToast(`Card ${status.toLowerCase()}`);
-            await load();
-        } catch (err) { showToast(err.message, "error"); }
+        const card = allCards.find(c => String(c.cardid) === String(b.dataset.id) && c.cardtype === (b.dataset.kind === "debit" ? "DEBIT" : "CREDIT"));
+        window.openNexusInfoModal({
+            title: `${status === "Blocked" ? "Block" : "Unblock"} card?`,
+            description: "This updates the card status in PostgreSQL.",
+            icon: status === "Blocked" ? "block" : "lock_open",
+            content: `<p>${status === "Blocked" ? "Block" : "Restore access to"} the ${escapeHtml(b.dataset.kind)} card <strong>${escapeHtml(card?.maskedcardno || `#${b.dataset.id}`)}</strong> for ${escapeHtml(card?.customername || "this customer")}?</p>`,
+            actions: [
+                { label: "Cancel" },
+                { label: status === "Blocked" ? "Block Card" : "Unblock Card", variant: status === "Blocked" ? "danger" : "primary", icon: status === "Blocked" ? "block" : "lock_open", onClick: async () => {
+                    await apiRequest(endpoint, { method: "PATCH", body: JSON.stringify({ status }) });
+                    showToast(`Card ${status.toLowerCase()}`);
+                    await load();
+                }}
+            ]
+        });
     });
 
     await load();

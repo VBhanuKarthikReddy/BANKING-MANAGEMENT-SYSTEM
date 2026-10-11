@@ -105,6 +105,7 @@
 </div>
 </div>
 <script src="../shared/api.js"></script>
+<script src="../shared/forms.js"></script>
 <script>
 const session = JSON.parse(localStorage.getItem('bankingSession') || 'null');
 if (!session || !['Admin'].includes(session.role)) window.location.href = '/';
@@ -123,7 +124,30 @@ async function loadRates(){try{const result=await apiRequest('/interest-rates');
 function openModal(rate=null){form.reset(); document.getElementById('rateId').value=rate?.rateid||''; document.getElementById('rateType').value=rate?.ratetype||'Deposit'; document.getElementById('productType').value=rate?.producttype||''; document.getElementById('rate').value=rate?.rate??''; document.getElementById('effectiveFrom').value=rate?.effectivefrom?String(rate.effectivefrom).slice(0,10):new Date().toISOString().slice(0,10); document.getElementById('effectiveTo').value=rate?.effectiveto?String(rate.effectiveto).slice(0,10):''; document.getElementById('modalTitle').textContent=rate?`Edit Rate #${rate.rateid}`:'Add Interest Rate'; modal.classList.remove('hidden'); modal.classList.add('flex');}
 function closeModal(){modal.classList.add('hidden'); modal.classList.remove('flex');}
 document.getElementById('addBtn').addEventListener('click',()=>openModal()); document.getElementById('refreshBtn').addEventListener('click',loadRates); document.getElementById('closeBtn').addEventListener('click',closeModal); document.getElementById('cancelBtn').addEventListener('click',closeModal); searchEl.addEventListener('input',render);
-rowsEl.addEventListener('click',async e=>{const id=Number(e.target.dataset.id); if(!id)return; const rate=rates.find(r=>Number(r.rateid)===id); if(e.target.classList.contains('edit'))openModal(rate); if(e.target.classList.contains('delete')){if(!confirm(`Delete interest rate #${id}? If it is referenced by a loan or fixed deposit, PostgreSQL may reject the deletion.`))return; try{await apiRequest(`/interest-rates/${id}`,{method:'DELETE'}); toast('Interest rate deleted.'); await loadRates();}catch(err){toast(err.message,true);}}});
+rowsEl.addEventListener('click', async e => {
+    const button = e.target.closest('button[data-id]');
+    if (!button) return;
+    const id = Number(button.dataset.id);
+    const rate = rates.find(r => Number(r.rateid) === id);
+    if (!rate) return;
+    if (button.classList.contains('edit')) { openModal(rate); return; }
+    if (button.classList.contains('delete')) {
+        window.openNexusInfoModal({
+            title: 'Delete interest rate?',
+            description: 'Rates referenced by loans or fixed deposits cannot be deleted.',
+            icon: 'percent',
+            content: `<p>Delete <strong>${esc(rate.producttype)}</strong> (${Number(rate.rate).toFixed(2)}%, Rate ID ${id})? PostgreSQL may reject deletion while existing loans or fixed deposits reference this rate.</p>`,
+            actions: [
+                { label: 'Cancel' },
+                { label: 'Delete Rate', variant: 'danger', icon: 'delete', onClick: async () => {
+                    await apiRequest(`/interest-rates/${id}`, { method: 'DELETE' });
+                    toast('Interest rate deleted.');
+                    await loadRates();
+                }}
+            ]
+        });
+    }
+});
 form.addEventListener('submit',async e=>{e.preventDefault(); const id=document.getElementById('rateId').value; const body={rateType:document.getElementById('rateType').value,productType:document.getElementById('productType').value.trim(),rate:Number(document.getElementById('rate').value),effectiveFrom:document.getElementById('effectiveFrom').value,effectiveTo:document.getElementById('effectiveTo').value||null}; try{if(id){await apiRequest(`/interest-rates/${id}`,{method:'PUT',body:JSON.stringify(body)});toast('Interest rate updated.');}else{await apiRequest('/interest-rates',{method:'POST',body:JSON.stringify(body)});toast('Interest rate created.');}closeModal();await loadRates();}catch(err){toast(err.message,true);}});
 loadRates();
 </script>
